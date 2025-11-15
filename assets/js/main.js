@@ -205,7 +205,20 @@ function login(email, password) {
 function logout() {
   TransiAI.currentUser = null;
   localStorage.removeItem('transiai_user');
-  window.location.href = '/transiai/index.html';
+  
+  // Determine the correct path to index.html based on current location
+  const currentPath = window.location.pathname;
+  let indexPath = '../index.html';
+  
+  // If we're in a subdirectory (passenger, driver, admin), go up one level
+  if (currentPath.includes('/passenger/') || currentPath.includes('/driver/') || currentPath.includes('/admin/')) {
+    indexPath = '../index.html';
+  } else {
+    // If we're already at root level
+    indexPath = 'index.html';
+  }
+  
+  window.location.href = indexPath;
 }
 
 function register(userData) {
@@ -240,12 +253,33 @@ function getCurrentUser() {
 function requireAuth(allowedRoles = []) {
   const user = getCurrentUser();
   if (!user) {
-    window.location.href = '/transiai/index.html';
+    // Determine the correct path to index.html based on current location
+    const currentPath = window.location.pathname;
+    let indexPath = '../index.html';
+    
+    if (currentPath.includes('/passenger/') || currentPath.includes('/driver/') || currentPath.includes('/admin/')) {
+      indexPath = '../index.html';
+    } else {
+      indexPath = 'index.html';
+    }
+    
+    window.location.href = indexPath;
     return false;
   }
   if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
     alert('Access denied');
-    window.location.href = '/transiai/index.html';
+    
+    // Determine the correct path to index.html
+    const currentPath = window.location.pathname;
+    let indexPath = '../index.html';
+    
+    if (currentPath.includes('/passenger/') || currentPath.includes('/driver/') || currentPath.includes('/admin/')) {
+      indexPath = '../index.html';
+    } else {
+      indexPath = 'index.html';
+    }
+    
+    window.location.href = indexPath;
     return false;
   }
   return true;
