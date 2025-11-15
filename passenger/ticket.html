@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Ticket - TransiAI Passenger</title>
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body {
+      background: var(--off-white);
+    }
+    
+    .ticket-container {
+      padding-top: 80px;
+      min-height: 100vh;
+      padding-bottom: var(--space-2xl);
+    }
+    
+    .ticket-wrapper {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .ticket-card {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+      overflow: hidden;
+      animation: scaleIn 0.5s ease-out;
+      margin-bottom: var(--space-xl);
+    }
+    
+    .ticket-header {
+      background: var(--gradient-primary);
+      color: var(--white);
+      padding: var(--space-2xl);
+      text-align: center;
+      position: relative;
+    }
+    
+    .ticket-header::after {
+      content: '';
+      position: absolute;
+      bottom: -20px;
+      left: 0;
+      right: 0;
+      height: 40px;
+      background: var(--white);
+      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    }
+    
+    .ticket-icon {
+      width: 80px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-4xl);
+      margin: 0 auto var(--space-md);
+      animation: bounce 2s ease-in-out infinite;
+    }
+    
+    .ticket-body {
+      padding: var(--space-2xl);
+      padding-top: var(--space-xl);
+    }
+    
+    .qr-section {
+      text-align: center;
+      padding: var(--space-xl) 0;
+      border-top: 2px dashed var(--light-gray);
+      border-bottom: 2px dashed var(--light-gray);
+      margin: var(--space-xl) 0;
+    }
+    
+    .qr-code-display {
+      width: 250px;
+      height: 250px;
+      margin: var(--space-lg) auto;
+      background: var(--white);
+      border: 4px solid var(--clay-orange);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-lg);
+      animation: glow 2s ease-in-out infinite;
+    }
+    
+    .ticket-details {
+      display: grid;
+      gap: var(--space-lg);
+    }
+    
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-md) 0;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+    
+    .detail-label {
+      color: var(--medium-gray);
+      font-size: var(--text-sm);
+    }
+    
+    .detail-value {
+      font-weight: var(--weight-semibold);
+      color: var(--deep-brown);
+      text-align: right;
+    }
+    
+    .ticket-footer {
+      background: var(--off-white);
+      padding: var(--space-xl);
+      text-align: center;
+    }
+    
+    .validity-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-md) var(--space-xl);
+      background: rgba(39, 174, 96, 0.1);
+      border-radius: var(--radius-full);
+      color: var(--success);
+      font-weight: var(--weight-semibold);
+      margin-bottom: var(--space-md);
+    }
+    
+    .validity-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-md);
+      margin-top: var(--space-xl);
+    }
+    
+    @media (max-width: 768px) {
+      .action-buttons {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-brand">
+        <div class="navbar-logo">T</div>
+        <span>TransiAI</span>
+      </a>
+      
+      <button class="navbar-toggle" onclick="toggleMobileMenu()">☰</button>
+      
+      <ul class="navbar-menu">
+        <li><a href="index.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="map.html" class="navbar-link">Live Map</a></li>
+        <li><a href="queue.html" class="navbar-link">My Queue</a></li>
+        <li><a href="history.html" class="navbar-link">History</a></li>
+        <li><a href="profile.html" class="navbar-link">Profile</a></li>
+        <li><a href="#" onclick="logout()" class="navbar-link">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="ticket-container">
+    <div class="container ticket-wrapper">
+      <!-- Ticket Card -->
+      <div class="ticket-card">
+        <!-- Header -->
+        <div class="ticket-header">
+          <div class="ticket-icon">🎫</div>
+          <h1 class="text-3xl font-bold mb-sm">Your Boarding Pass</h1>
+          <p style="opacity: 0.9;">Show this to the driver when boarding</p>
+        </div>
+        
+        <!-- Body -->
+        <div class="ticket-body">
+          <!-- QR Code Section -->
+          <div class="qr-section">
+            <div class="validity-badge">
+              <div class="validity-dot"></div>
+              <span>Valid Ticket</span>
+            </div>
+            
+            <div class="qr-code-display" id="qrCodeDisplay">
+              <!-- QR code will be generated here -->
+            </div>
+            
+            <div class="text-sm text-gray">Ticket ID: <strong id="ticketId">TKT-2025-001</strong></div>
+          </div>
+          
+          <!-- Ticket Details -->
+          <div class="ticket-details">
+            <div class="detail-row">
+              <span class="detail-label">Route</span>
+              <span class="detail-value" id="ticketRoute">Johannesburg CBD to Soweto</span>
+            </div>
+            
+            <div class="detail-row">
+              <span class="detail-label">Queue Number</span>
+              <span class="detail-value" id="ticketQueue">A-045</span>
+            </div>
+            
+            <div class="detail-row">
+              <span class="detail-label">Date</span>
+              <span class="detail-value" id="ticketDate">January 15, 2025</span>
+            </div>
+            
+            <div class="detail-row">
+              <span class="detail-label">Time</span>
+              <span class="detail-value" id="ticketTime">08:30 AM</span>
+            </div>
+            
+            <div class="detail-row">
+              <span class="detail-label">Vehicle Type</span>
+              <span class="detail-value" id="ticketVehicle">Bus</span>
+            </div>
+            
+            <div class="detail-row">
+              <span class="detail-label">Passenger</span>
+              <span class="detail-value" id="ticketPassenger">Thabo Mbeki</span>
+            </div>
+            
+            <div class="detail-row" style="border-top: 2px solid var(--light-gray); padding-top: var(--space-lg); margin-top: var(--space-md);">
+              <span class="detail-label text-lg">Fare</span>
+              <span class="detail-value text-2xl text-primary" id="ticketFare">R 25.00</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="ticket-footer">
+          <p class="text-sm text-gray mb-md">
+            This ticket is valid for one journey on the specified route.
+          </p>
+          <p class="text-xs text-gray">
+            Please arrive at the boarding point 5 minutes before departure.
+          </p>
+        </div>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button class="btn btn-outline" onclick="downloadTicket()">
+          📥 Download
+        </button>
+        <button class="btn btn-outline" onclick="shareTicket()">
+          📤 Share
+        </button>
+        <button class="btn btn-primary" onclick="trackVehicle()">
+          📍 Track Vehicle
+        </button>
+        <button class="btn btn-secondary" onclick="contactDriver()">
+          📞 Contact Driver
+        </button>
+      </div>
+      
+      <!-- Important Information -->
+      <div class="card mt-xl">
+        <h3 class="text-lg font-bold mb-md">Important Information</h3>
+        <ul style="list-style: none; padding: 0;">
+          <li class="flex gap-md mb-md">
+            <span>✓</span>
+            <span class="text-sm text-gray">Keep your phone charged and this page accessible</span>
+          </li>
+          <li class="flex gap-md mb-md">
+            <span>✓</span>
+            <span class="text-sm text-gray">Show the QR code to the driver when boarding</span>
+          </li>
+          <li class="flex gap-md mb-md">
+            <span>✓</span>
+            <span class="text-sm text-gray">Arrive at the pickup point on time</span>
+          </li>
+          <li class="flex gap-md mb-md">
+            <span>✓</span>
+            <span class="text-sm text-gray">Contact support if you face any issues</span>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- Back Button -->
+      <div class="text-center mt-xl">
+        <a href="index.html" class="btn btn-ghost">← Back to Dashboard</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    // Check authentication
+    requireAuth(['passenger']);
+    
+    const user = getCurrentUser();
+    let ticketData = {
+      id: 'TKT-2025-' + String(Math.floor(Math.random() * 1000)).padStart(3, '0'),
+      route: 'Johannesburg CBD to Soweto',
+      queueNumber: 'A-045',
+      date: new Date().toLocaleDateString('en-ZA', { year: 'numeric', month: 'long', day: 'numeric' }),
+      time: new Date().toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' }),
+      vehicle: 'Bus',
+      passenger: user.name,
+      fare: 25.00
+    };
+    
+    // Initialize ticket
+    function initializeTicket() {
+      // Check for queue parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const queueNumber = urlParams.get('queue');
+      
+      if (queueNumber) {
+        ticketData.queueNumber = queueNumber;
+      }
+      
+      // Update ticket display
+      document.getElementById('ticketId').textContent = ticketData.id;
+      document.getElementById('ticketRoute').textContent = ticketData.route;
+      document.getElementById('ticketQueue').textContent = ticketData.queueNumber;
+      document.getElementById('ticketDate').textContent = ticketData.date;
+      document.getElementById('ticketTime').textContent = ticketData.time;
+      document.getElementById('ticketVehicle').textContent = ticketData.vehicle;
+      document.getElementById('ticketPassenger').textContent = ticketData.passenger;
+      document.getElementById('ticketFare').textContent = formatCurrency(ticketData.fare);
+      
+      // Generate QR code
+      generateTicketQR();
+      
+      // Deduct fare from wallet
+      if (user.wallet >= ticketData.fare) {
+        user.wallet -= ticketData.fare;
+        localStorage.setItem('transiai_user', JSON.stringify(user));
+      }
+      
+      // Add to trip history
+      const trip = {
+        id: Date.now(),
+        userId: user.id,
+        route: ticketData.route,
+        date: new Date().toISOString().split('T')[0],
+        time: ticketData.time,
+        price: ticketData.fare,
+        status: 'active',
+        queueNumber: ticketData.queueNumber
+      };
+      TransiAI.trips.unshift(trip);
+    }
+    
+    function generateTicketQR() {
+      const qrData = `TRANSIAI-TICKET-${ticketData.id}-${ticketData.queueNumber}`;
+      const qrDisplay = document.getElementById('qrCodeDisplay');
+      
+      // Generate QR code SVG
+      const qrSvg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+          <rect width="240" height="240" fill="white"/>
+          <g fill="${getComputedStyle(document.documentElement).getPropertyValue('--clay-orange')}">
+            <!-- QR code pattern (simplified mock) -->
+            <rect x="20" y="20" width="40" height="40"/>
+            <rect x="180" y="20" width="40" height="40"/>
+            <rect x="20" y="180" width="40" height="40"/>
+            <rect x="80" y="80" width="80" height="80"/>
+            <rect x="100" y="20" width="20" height="20"/>
+            <rect x="140" y="20" width="20" height="20"/>
+            <rect x="20" y="100" width="20" height="20"/>
+            <rect x="20" y="140" width="20" height="20"/>
+            <rect x="200" y="100" width="20" height="20"/>
+            <rect x="200" y="140" width="20" height="20"/>
+            <rect x="100" y="200" width="20" height="20"/>
+            <rect x="140" y="200" width="20" height="20"/>
+          </g>
+          <text x="120" y="230" text-anchor="middle" font-size="10" fill="#666">${ticketData.id}</text>
+        </svg>
+      `;
+      
+      qrDisplay.innerHTML = qrSvg;
+    }
+    
+    function downloadTicket() {
+      showNotification('Downloading ticket...', 'info');
+      setTimeout(() => {
+        showNotification('Ticket saved to your device!', 'success');
+      }, 1000);
+    }
+    
+    function shareTicket() {
+      if (navigator.share) {
+        navigator.share({
+          title: 'TransiAI Ticket',
+          text: `My ticket for ${ticketData.route}`,
+          url: window.location.href
+        }).then(() => {
+          showNotification('Ticket shared successfully!', 'success');
+        }).catch(() => {
+          showNotification('Sharing cancelled', 'info');
+        });
+      } else {
+        showNotification('Sharing not supported on this device', 'warning');
+      }
+    }
+    
+    function trackVehicle() {
+      showNotification('Redirecting to live tracking...', 'info');
+      setTimeout(() => {
+        window.location.href = 'map.html';
+      }, 1000);
+    }
+    
+    function contactDriver() {
+      showModal(
+        'Contact Driver',
+        `
+          <div class="text-center mb-lg">
+            <div class="avatar avatar-lg" style="margin: 0 auto;">ND</div>
+            <h3 class="text-xl font-bold mt-md">Nomsa Dlamini</h3>
+            <p class="text-sm text-gray">Your driver for this trip</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Message</label>
+            <textarea class="form-textarea" placeholder="Type your message..."></textarea>
+          </div>
+        `,
+        [
+          {
+            label: 'Cancel',
+            class: 'btn-ghost',
+            onclick: 'closeModal()'
+          },
+          {
+            label: 'Send Message',
+            class: 'btn-primary',
+            onclick: 'sendDriverMessage()'
+          }
+        ]
+      );
+    }
+    
+    function sendDriverMessage() {
+      closeModal();
+      showNotification('Message sent to driver!', 'success');
+    }
+    
+    // Initialize
+    initializeTicket();
+    
+    // Show success notification
+    setTimeout(() => {
+      showNotification('🎉 Ticket generated successfully!', 'success');
+    }, 500);
+  </script>
+</body>
+</html>

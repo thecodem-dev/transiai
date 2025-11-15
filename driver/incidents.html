@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Incidents - TransiAI Driver</title>
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body {
+      background: var(--off-white);
+    }
+    
+    .incidents-container {
+      padding-top: 80px;
+      min-height: 100vh;
+      padding-bottom: var(--space-2xl);
+    }
+    
+    .incidents-header {
+      background: var(--gradient-tech);
+      color: var(--white);
+      padding: var(--space-2xl) 0;
+      margin-bottom: var(--space-xl);
+    }
+    
+    .report-card {
+      background: var(--white);
+      padding: var(--space-2xl);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .incident-types {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: var(--space-md);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .incident-type {
+      padding: var(--space-lg);
+      border: 2px solid var(--light-gray);
+      border-radius: var(--radius-lg);
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition-base);
+    }
+    
+    .incident-type:hover {
+      border-color: var(--cool-teal);
+      background: rgba(27, 163, 156, 0.05);
+    }
+    
+    .incident-type.selected {
+      border-color: var(--cool-teal);
+      background: rgba(27, 163, 156, 0.1);
+    }
+    
+    .incident-type-icon {
+      font-size: var(--text-4xl);
+      margin-bottom: var(--space-sm);
+    }
+    
+    .incident-type-label {
+      font-weight: var(--weight-semibold);
+      font-size: var(--text-sm);
+    }
+    
+    .incident-list {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .incident-item {
+      padding: var(--space-lg);
+      border-left: 4px solid var(--warning);
+      background: var(--off-white);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-md);
+      transition: all var(--transition-base);
+    }
+    
+    .incident-item:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateX(4px);
+    }
+    
+    .incident-item.resolved {
+      border-left-color: var(--success);
+      opacity: 0.7;
+    }
+    
+    .incident-item.critical {
+      border-left-color: var(--error);
+    }
+    
+    .incident-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: var(--space-md);
+      flex-wrap: wrap;
+      gap: var(--space-md);
+    }
+    
+    .severity-badge {
+      padding: var(--space-xs) var(--space-md);
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs);
+      font-weight: var(--weight-semibold);
+      text-transform: uppercase;
+    }
+    
+    .severity-low {
+      background: rgba(39, 174, 96, 0.1);
+      color: var(--success);
+    }
+    
+    .severity-medium {
+      background: rgba(243, 156, 18, 0.1);
+      color: var(--warning);
+    }
+    
+    .severity-high {
+      background: rgba(231, 76, 60, 0.1);
+      color: var(--error);
+    }
+    
+    .emergency-button {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 70px;
+      height: 70px;
+      background: var(--error);
+      color: var(--white);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-3xl);
+      box-shadow: var(--shadow-xl);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      z-index: 100;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .emergency-button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 32px rgba(231, 76, 60, 0.4);
+    }
+    
+    @media (max-width: 768px) {
+      .incident-types {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .emergency-button {
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        font-size: var(--text-2xl);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-brand">
+        <div class="navbar-logo">T</div>
+        <span>TransiAI Driver</span>
+      </a>
+      
+      <button class="navbar-toggle" onclick="toggleMobileMenu()">☰</button>
+      
+      <ul class="navbar-menu">
+        <li><a href="index.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="routes.html" class="navbar-link">My Routes</a></li>
+        <li><a href="pickups.html" class="navbar-link">Pickups</a></li>
+        <li><a href="earnings.html" class="navbar-link">Earnings</a></li>
+        <li><a href="incidents.html" class="navbar-link active">Incidents</a></li>
+        <li><a href="#" onclick="logout()" class="navbar-link">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="incidents-container">
+    <!-- Header -->
+    <div class="incidents-header">
+      <div class="container">
+        <h1 class="text-4xl font-bold mb-sm">Incident Reporting</h1>
+        <p class="text-lg" style="opacity: 0.9;">Report and track incidents during your trips</p>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Report New Incident -->
+      <div class="report-card">
+        <h2 class="text-2xl font-bold mb-lg">Report New Incident</h2>
+        
+        <form id="incidentForm" onsubmit="submitIncident(event)">
+          <div class="form-group">
+            <label class="form-label">Incident Type</label>
+            <div class="incident-types" id="incidentTypes">
+              <div class="incident-type" onclick="selectIncidentType('vehicle')">
+                <div class="incident-type-icon">🚗</div>
+                <div class="incident-type-label">Vehicle Issue</div>
+              </div>
+              <div class="incident-type" onclick="selectIncidentType('traffic')">
+                <div class="incident-type-icon">🚦</div>
+                <div class="incident-type-label">Traffic</div>
+              </div>
+              <div class="incident-type" onclick="selectIncidentType('passenger')">
+                <div class="incident-type-icon">👥</div>
+                <div class="incident-type-label">Passenger</div>
+              </div>
+              <div class="incident-type" onclick="selectIncidentType('accident')">
+                <div class="incident-type-icon">⚠️</div>
+                <div class="incident-type-label">Accident</div>
+              </div>
+              <div class="incident-type" onclick="selectIncidentType('weather')">
+                <div class="incident-type-icon">🌧️</div>
+                <div class="incident-type-label">Weather</div>
+              </div>
+              <div class="incident-type" onclick="selectIncidentType('other')">
+                <div class="incident-type-icon">📝</div>
+                <div class="incident-type-label">Other</div>
+              </div>
+            </div>
+            <input type="hidden" id="selectedType" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Severity Level</label>
+            <select class="form-select" id="severity" required>
+              <option value="">Select severity</option>
+              <option value="low">Low - Minor issue</option>
+              <option value="medium">Medium - Requires attention</option>
+              <option value="high">High - Urgent</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Location</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              id="location"
+              placeholder="Enter location or use current location"
+              required
+            >
+            <button type="button" class="btn btn-sm btn-outline mt-sm" onclick="useCurrentLocation()">
+              📍 Use Current Location
+            </button>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea 
+              class="form-textarea" 
+              id="description"
+              placeholder="Describe the incident in detail..."
+              rows="5"
+              required
+            ></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Attach Photos (Optional)</label>
+            <input type="file" class="form-input" accept="image/*" multiple>
+            <span class="form-help">You can attach up to 5 photos</span>
+          </div>
+          
+          <div class="flex gap-md">
+            <button type="submit" class="btn btn-primary btn-lg">
+              📤 Submit Report
+            </button>
+            <button type="button" class="btn btn-outline btn-lg" onclick="resetForm()">
+              🔄 Reset
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Recent Incidents -->
+      <div class="incident-list">
+        <div class="flex justify-between items-center mb-xl">
+          <h2 class="text-2xl font-bold">Recent Incidents</h2>
+          <select class="form-select" style="width: 200px;" onchange="filterIncidents(this.value)">
+            <option value="all">All Incidents</option>
+            <option value="pending">Pending</option>
+            <option value="resolved">Resolved</option>
+          </select>
+        </div>
+        
+        <div id="incidentsList">
+          <!-- Incidents will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Emergency Button -->
+  <div class="emergency-button" onclick="reportEmergency()" title="Emergency SOS">
+    🆘
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    // Check authentication
+    requireAuth(['driver']);
+    
+    let selectedIncidentType = null;
+    
+    const incidents = [
+      {
+        id: 1,
+        type: 'traffic',
+        title: 'Heavy Traffic on N1',
+        description: 'Severe congestion causing 30-minute delay',
+        location: 'N1 Highway, Johannesburg',
+        severity: 'medium',
+        status: 'pending',
+        date: '2025-01-15',
+        time: '14:30'
+      },
+      {
+        id: 2,
+        type: 'vehicle',
+        title: 'Tire Pressure Warning',
+        description: 'Low tire pressure indicator activated',
+        location: 'Park Station',
+        severity: 'low',
+        status: 'resolved',
+        date: '2025-01-14',
+        time: '09:15'
+      },
+      {
+        id: 3,
+        type: 'passenger',
+        title: 'Passenger Dispute',
+        description: 'Disagreement over fare payment',
+        location: 'Soweto Central',
+        severity: 'medium',
+        status: 'resolved',
+        date: '2025-01-13',
+        time: '16:45'
+      }
+    ];
+    
+    // Initialize
+    function initializeIncidents() {
+      loadIncidents('all');
+    }
+    
+    function selectIncidentType(type) {
+      selectedIncidentType = type;
+      document.getElementById('selectedType').value = type;
+      
+      // Update UI
+      document.querySelectorAll('.incident-type').forEach(el => {
+        el.classList.remove('selected');
+      });
+      event.target.closest('.incident-type').classList.add('selected');
+    }
+    
+    function useCurrentLocation() {
+      showNotification('Getting current location...', 'info');
+      setTimeout(() => {
+        document.getElementById('location').value = 'N1 Highway, Johannesburg (GPS)';
+        showNotification('Location updated!', 'success');
+      }, 1000);
+    }
+    
+    function submitIncident(event) {
+      event.preventDefault();
+      
+      if (!selectedIncidentType) {
+        showNotification('Please select an incident type', 'error');
+        return;
+      }
+      
+      const formData = {
+        type: selectedIncidentType,
+        severity: document.getElementById('severity').value,
+        location: document.getElementById('location').value,
+        description: document.getElementById('description').value
+      };
+      
+      showNotification('Submitting incident report...', 'info');
+      
+      setTimeout(() => {
+        // Add to incidents list
+        const newIncident = {
+          id: incidents.length + 1,
+          type: formData.type,
+          title: `${formData.type.charAt(0).toUpperCase() + formData.type.slice(1)} Incident`,
+          description: formData.description,
+          location: formData.location,
+          severity: formData.severity,
+          status: 'pending',
+          date: new Date().toISOString().split('T')[0],
+          time: new Date().toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })
+        };
+        
+        incidents.unshift(newIncident);
+        loadIncidents('all');
+        resetForm();
+        
+        showNotification('Incident reported successfully! Support team notified.', 'success');
+      }, 1500);
+    }
+    
+    function resetForm() {
+      document.getElementById('incidentForm').reset();
+      document.getElementById('selectedType').value = '';
+      selectedIncidentType = null;
+      document.querySelectorAll('.incident-type').forEach(el => {
+        el.classList.remove('selected');
+      });
+    }
+    
+    function loadIncidents(filter) {
+      const incidentsList = document.getElementById('incidentsList');
+      let filteredIncidents = incidents;
+      
+      if (filter !== 'all') {
+        filteredIncidents = incidents.filter(i => i.status === filter);
+      }
+      
+      if (filteredIncidents.length === 0) {
+        incidentsList.innerHTML = `
+          <div class="text-center p-2xl">
+            <div style="font-size: 3rem; margin-bottom: var(--space-lg);">✅</div>
+            <h3 class="text-xl font-bold mb-md">No incidents found</h3>
+            <p class="text-gray">All clear! No ${filter === 'all' ? '' : filter} incidents to display.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      incidentsList.innerHTML = filteredIncidents.map(incident => `
+        <div class="incident-item ${incident.status} ${incident.severity === 'high' ? 'critical' : ''}">
+          <div class="incident-header">
+            <div>
+              <div class="flex items-center gap-md mb-sm">
+                <span style="font-size: 1.5rem;">${getIncidentIcon(incident.type)}</span>
+                <h3 class="text-lg font-bold">${incident.title}</h3>
+              </div>
+              <p class="text-gray mb-sm">${incident.description}</p>
+              <div class="text-sm text-gray">
+                📍 ${incident.location} • ${formatDate(incident.date)} ${incident.time}
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div class="severity-badge severity-${incident.severity} mb-sm">
+                ${incident.severity}
+              </div>
+              <div class="badge badge-${incident.status === 'resolved' ? 'success' : 'warning'}">
+                ${incident.status}
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex gap-sm mt-md">
+            <button class="btn btn-sm btn-outline" onclick="viewIncidentDetails(${incident.id})">
+              👁️ View Details
+            </button>
+            ${incident.status === 'pending' ? `
+              <button class="btn btn-sm btn-primary" onclick="updateIncident(${incident.id})">
+                ✏️ Update
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function getIncidentIcon(type) {
+      const icons = {
+        'vehicle': '🚗',
+        'traffic': '🚦',
+        'passenger': '👥',
+        'accident': '⚠️',
+        'weather': '🌧️',
+        'other': '📝'
+      };
+      return icons[type] || '📝';
+    }
+    
+    function filterIncidents(filter) {
+      loadIncidents(filter);
+    }
+    
+    function viewIncidentDetails(incidentId) {
+      const incident = incidents.find(i => i.id === incidentId);
+      
+      showModal(
+        'Incident Details',
+        `
+          <div class="mb-lg">
+            <div class="flex items-center gap-md mb-md">
+              <span style="font-size: 2rem;">${getIncidentIcon(incident.type)}</span>
+              <h3 class="text-xl font-bold">${incident.title}</h3>
+            </div>
+            
+            <div class="space-y-md">
+              <div>
+                <div class="text-sm text-gray">Type</div>
+                <div class="font-semibold">${incident.type.charAt(0).toUpperCase() + incident.type.slice(1)}</div>
+              </div>
+              
+              <div>
+                <div class="text-sm text-gray">Severity</div>
+                <span class="severity-badge severity-${incident.severity}">${incident.severity}</span>
+              </div>
+              
+              <div>
+                <div class="text-sm text-gray">Status</div>
+                <span class="badge badge-${incident.status === 'resolved' ? 'success' : 'warning'}">${incident.status}</span>
+              </div>
+              
+              <div>
+                <div class="text-sm text-gray">Location</div>
+                <div class="font-semibold">${incident.location}</div>
+              </div>
+              
+              <div>
+                <div class="text-sm text-gray">Date & Time</div>
+                <div class="font-semibold">${formatDate(incident.date)} at ${incident.time}</div>
+              </div>
+              
+              <div>
+                <div class="text-sm text-gray">Description</div>
+                <div class="font-semibold">${incident.description}</div>
+              </div>
+            </div>
+          </div>
+        `,
+        [
+          { label: 'Close', class: 'btn-primary', onclick: 'closeModal()' }
+        ]
+      );
+    }
+    
+    function updateIncident(incidentId) {
+      showModal(
+        'Update Incident',
+        `
+          <div class="form-group">
+            <label class="form-label">Status Update</label>
+            <select class="form-select" id="updateStatus">
+              <option value="pending">Still Pending</option>
+              <option value="resolved">Resolved</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Additional Notes</label>
+            <textarea class="form-textarea" id="updateNotes" placeholder="Add any updates or notes..." rows="4"></textarea>
+          </div>
+        `,
+        [
+          { label: 'Cancel', class: 'btn-ghost', onclick: 'closeModal()' },
+          { label: 'Update', class: 'btn-primary', onclick: 'confirmUpdate(' + incidentId + ')' }
+        ]
+      );
+    }
+    
+    function confirmUpdate(incidentId) {
+      const incident = incidents.find(i => i.id === incidentId);
+      const newStatus = document.getElementById('updateStatus').value;
+      
+      incident.status = newStatus;
+      
+      closeModal();
+      loadIncidents('all');
+      showNotification('Incident updated successfully!', 'success');
+    }
+    
+    function reportEmergency() {
+      showModal(
+        '🆘 EMERGENCY',
+        `
+          <div class="alert alert-error mb-lg">
+            <strong>Emergency services will be contacted immediately!</strong>
+          </div>
+          
+          <div class="text-center mb-lg">
+            <div style="font-size: 4rem; margin-bottom: var(--space-md);">🚨</div>
+            <h3 class="text-2xl font-bold mb-md">What's your emergency?</h3>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Emergency Type</label>
+            <select class="form-select" id="emergencyType">
+              <option>Medical Emergency</option>
+              <option>Accident</option>
+              <option>Safety Threat</option>
+              <option>Vehicle Fire</option>
+              <option>Other Critical</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Current Location</label>
+            <input type="text" class="form-input" id="emergencyLocation" placeholder="Your location">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Details</label>
+            <textarea class="form-textarea" id="emergencyDetails" placeholder="Describe the emergency..." rows="3"></textarea>
+          </div>
+        `,
+        [
+          { label: 'Cancel', class: 'btn-ghost', onclick: 'closeModal()' },
+          { label: '🚨 CALL EMERGENCY SERVICES', class: 'btn-primary', onclick: 'callEmergency()' }
+        ]
+      );
+    }
+    
+    function callEmergency() {
+      closeModal();
+      showNotification('🚨 Emergency services contacted! Help is on the way!', 'error');
+      showNotification('Stay calm. Assistance arriving in 8 minutes.', 'warning');
+    }
+    
+    // Initialize
+    initializeIncidents();
+  </script>
+</body>
+</html>

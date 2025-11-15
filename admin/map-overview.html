@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Map Overview - TransiAI Admin</title>
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body {
+      background: var(--off-white);
+      margin: 0;
+      padding: 0;
+    }
+    
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+    
+    .admin-sidebar {
+      background: linear-gradient(180deg, var(--deep-indigo) 0%, var(--deep-brown) 100%);
+      color: var(--white);
+      padding: var(--space-xl);
+      position: fixed;
+      width: 280px;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 100;
+    }
+    
+    .admin-brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-2xl);
+      padding-bottom: var(--space-lg);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .admin-logo {
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-2xl);
+    }
+    
+    .admin-menu {
+      list-style: none;
+    }
+    
+    .admin-menu-item {
+      margin-bottom: var(--space-sm);
+    }
+    
+    .admin-menu-link {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      color: rgba(255, 255, 255, 0.8);
+      border-radius: var(--radius-lg);
+      transition: all var(--transition-fast);
+      text-decoration: none;
+    }
+    
+    .admin-menu-link:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--white);
+    }
+    
+    .admin-menu-link.active {
+      background: rgba(255, 255, 255, 0.2);
+      color: var(--white);
+    }
+    
+    .admin-content {
+      margin-left: 280px;
+      padding: var(--space-xl);
+    }
+    
+    .map-container {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: var(--space-lg);
+      height: calc(100vh - 100px);
+    }
+    
+    .map-sidebar {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl);
+      box-shadow: var(--shadow-md);
+      overflow-y: auto;
+    }
+    
+    .map-view {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .real-map {
+      width: 100%;
+      height: 100%;
+      border-radius: var(--radius-xl);
+    }
+    
+    .vehicle-marker {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background: var(--gradient-tech);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-xl);
+      cursor: pointer;
+      animation: pulse 2s ease-in-out infinite;
+      box-shadow: var(--shadow-lg);
+      transition: all var(--transition-base);
+    }
+    
+    .vehicle-marker:hover {
+      transform: scale(1.2);
+      z-index: 10;
+    }
+    
+    .vehicle-marker.active {
+      background: var(--gradient-primary);
+    }
+    
+    .vehicle-marker.idle {
+      background: var(--medium-gray);
+      animation: none;
+    }
+    
+    .route-line {
+      position: absolute;
+      height: 4px;
+      background: var(--clay-orange);
+      opacity: 0.6;
+      border-radius: 2px;
+    }
+    
+    .vehicle-card {
+      background: var(--off-white);
+      padding: var(--space-md);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-md);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      border-left: 4px solid var(--cool-teal);
+    }
+    
+    .vehicle-card:hover {
+      background: rgba(27, 163, 156, 0.1);
+      transform: translateX(4px);
+    }
+    
+    .vehicle-card.selected {
+      border-left-color: var(--clay-orange);
+      background: rgba(204, 90, 26, 0.1);
+    }
+    
+    .vehicle-info-panel {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      animation: slideInUp 0.3s ease-out;
+      z-index: 20;
+    }
+    
+    .filter-section {
+      margin-bottom: var(--space-lg);
+      padding-bottom: var(--space-lg);
+      border-bottom: 2px solid var(--light-gray);
+    }
+    
+    @media (max-width: 1024px) {
+      .admin-layout {
+        grid-template-columns: 1fr;
+      }
+      
+      .admin-sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+      }
+      
+      .admin-content {
+        margin-left: 0;
+      }
+      
+      .map-container {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+      
+      .map-view {
+        height: 400px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-brand">
+        <div class="admin-logo">⚡</div>
+        <div>
+          <div class="text-xl font-bold">TransiAI</div>
+          <div class="text-xs" style="opacity: 0.8;">Admin Portal</div>
+        </div>
+      </div>
+      
+      <ul class="admin-menu">
+        <li class="admin-menu-item">
+          <a href="index.html" class="admin-menu-link">
+            <span>📊</span>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="map-overview.html" class="admin-menu-link active">
+            <span>🗺️</span>
+            <span>Live Map</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="queue-management.html" class="admin-menu-link">
+            <span>👥</span>
+            <span>Queue Management</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="dispatch.html" class="admin-menu-link">
+            <span>🚌</span>
+            <span>Dispatch</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="drivers.html" class="admin-menu-link">
+            <span>👨‍✈️</span>
+            <span>Drivers</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="analytics.html" class="admin-menu-link">
+            <span>📈</span>
+            <span>Analytics</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="ai-insights.html" class="admin-menu-link">
+            <span>🤖</span>
+            <span>AI Insights</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="#" onclick="logout()" class="admin-menu-link">
+            <span>🚪</span>
+            <span>Logout</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="admin-content">
+      <div class="map-container">
+        <!-- Map Sidebar -->
+        <div class="map-sidebar">
+          <h2 class="text-2xl font-bold mb-lg">Fleet Overview</h2>
+          
+          <!-- Filters -->
+          <div class="filter-section">
+            <div class="form-group">
+              <label class="form-label">Status Filter</label>
+              <select class="form-select" id="statusFilter" onchange="filterVehicles()">
+                <option value="all">All Vehicles</option>
+                <option value="active">Active</option>
+                <option value="idle">Idle</option>
+                <option value="maintenance">Maintenance</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Vehicle Type</label>
+              <select class="form-select" id="typeFilter" onchange="filterVehicles()">
+                <option value="all">All Types</option>
+                <option value="bus">Bus</option>
+                <option value="taxi">Taxi</option>
+                <option value="van">Van</option>
+                <option value="shuttle">Shuttle</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- Vehicle List -->
+          <div>
+            <div class="flex justify-between items-center mb-md">
+              <h3 class="text-lg font-bold">Active Vehicles</h3>
+              <span class="badge badge-success" id="vehicleCount">0</span>
+            </div>
+            <div id="vehicleList">
+              <!-- Vehicles will be loaded here -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- Map View -->
+        <div class="map-view">
+          <div class="real-map" id="mapView">
+            <!-- Real interactive map will be rendered here -->
+          </div>
+          
+          <!-- Vehicle Info Panel -->
+          <div class="vehicle-info-panel" id="vehicleInfoPanel" style="display: none;">
+            <div class="flex justify-between items-start mb-md">
+              <div>
+                <h3 class="text-xl font-bold mb-xs" id="selectedVehicleReg">Vehicle Registration</h3>
+                <p class="text-sm text-gray" id="selectedVehicleRoute">Route</p>
+              </div>
+              <button class="btn btn-sm btn-ghost" onclick="closeVehicleInfo()">✕</button>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-md mb-lg">
+              <div class="text-center">
+                <div class="text-sm text-gray">Status</div>
+                <div class="badge badge-success mt-xs" id="selectedVehicleStatus">Active</div>
+              </div>
+              <div class="text-center">
+                <div class="text-sm text-gray">Passengers</div>
+                <div class="font-bold text-lg mt-xs" id="selectedVehiclePassengers">0/0</div>
+              </div>
+              <div class="text-center">
+                <div class="text-sm text-gray">Driver</div>
+                <div class="font-bold text-lg mt-xs" id="selectedVehicleDriver">-</div>
+              </div>
+            </div>
+            
+            <div class="flex gap-md">
+              <button class="btn btn-outline" style="flex: 1;" onclick="trackVehicle()">
+                📍 Track Live
+              </button>
+              <button class="btn btn-outline" onclick="contactDriver()">
+                📞 Contact
+              </button>
+              <button class="btn btn-primary" onclick="manageVehicle()">
+                ⚙️ Manage
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="../assets/js/map.js"></script>
+  <script>
+    // Check authentication
+    requireAuth(['admin']);
+    
+    let vehicles = TransiAI.vehicles;
+    let selectedVehicle = null;
+    let map;
+    let vehicleMarkers = [];
+    
+    // Initialize
+    function initializeMap() {
+      loadVehicleList();
+      renderRealMap();
+      updateVehicleCount();
+      
+      // Auto-update every 5 seconds
+      setInterval(() => {
+        updateVehiclePositions();
+      }, 5000);
+    }
+    
+    function renderRealMap() {
+      // Initialize Leaflet map
+      map = MapUtils.initializeMap('mapView', 'johannesburg', 11);
+      
+      // Add route lines
+      MapUtils.addRouteLine(map, 'johannesburg', 'soweto', '#CC5A1A');
+      MapUtils.addRouteLine(map, 'sandton', 'pretoria', '#1BA39C');
+      
+      // Add all vehicles
+      vehicles.forEach(vehicle => {
+        const marker = MapUtils.addVehicleMarker(map, vehicle, selectVehicle);
+        vehicleMarkers.push({ vehicle, marker });
+      });
+    }
+    
+    function updateVehiclePositions() {
+      vehicleMarkers.forEach(({ vehicle, marker }) => {
+        const currentPos = marker.getLatLng();
+        const newPos = MapUtils.getRandomNearbyCoords(currentPos.lat, currentPos.lng, 0.3);
+        MapUtils.animateVehicle(marker, newPos.lat, newPos.lng, 3000);
+      });
+    }
+    
+    function loadVehicleList() {
+      const vehicleList = document.getElementById('vehicleList');
+      
+      vehicleList.innerHTML = vehicles.map(vehicle => `
+        <div class="vehicle-card" onclick="selectVehicle(${vehicle.id})">
+          <div class="flex justify-between items-start mb-sm">
+            <div>
+              <div class="font-bold">${vehicle.registration}</div>
+              <div class="text-sm text-gray">${vehicle.type.charAt(0).toUpperCase() + vehicle.type.slice(1)}</div>
+            </div>
+            <span class="badge badge-${vehicle.status === 'active' ? 'success' : 'warning'}">${vehicle.status}</span>
+          </div>
+          <div class="text-sm text-gray mb-sm">${vehicle.route}</div>
+          <div class="flex justify-between text-xs">
+            <span>👥 ${vehicle.currentPassengers}/${vehicle.capacity}</span>
+            <span>👨‍✈️ ${vehicle.driver.split(' ')[0]}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function selectVehicle(vehicleId) {
+      selectedVehicle = vehicles.find(v => v.id === vehicleId);
+      
+      // Update UI
+      document.querySelectorAll('.vehicle-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      event.target.closest('.vehicle-card')?.classList.add('selected');
+      
+      // Show vehicle info
+      showVehicleInfo();
+    }
+    
+    function showVehicleInfo() {
+      if (!selectedVehicle) return;
+      
+      const panel = document.getElementById('vehicleInfoPanel');
+      document.getElementById('selectedVehicleReg').textContent = selectedVehicle.registration;
+      document.getElementById('selectedVehicleRoute').textContent = selectedVehicle.route;
+      document.getElementById('selectedVehicleStatus').textContent = selectedVehicle.status;
+      document.getElementById('selectedVehiclePassengers').textContent = `${selectedVehicle.currentPassengers}/${selectedVehicle.capacity}`;
+      document.getElementById('selectedVehicleDriver').textContent = selectedVehicle.driver.split(' ')[0];
+      
+      panel.style.display = 'block';
+    }
+    
+    function closeVehicleInfo() {
+      document.getElementById('vehicleInfoPanel').style.display = 'none';
+      selectedVehicle = null;
+    }
+    
+    function filterVehicles() {
+      const statusFilter = document.getElementById('statusFilter').value;
+      const typeFilter = document.getElementById('typeFilter').value;
+      
+      // Filter logic would go here
+      showNotification('Filters applied', 'info');
+      updateVehicleCount();
+    }
+    
+    function updateVehicleCount() {
+      document.getElementById('vehicleCount').textContent = vehicles.length;
+    }
+    
+    function trackVehicle() {
+      if (!selectedVehicle) return;
+      showNotification(`Tracking ${selectedVehicle.registration} in real-time...`, 'success');
+    }
+    
+    function contactDriver() {
+      if (!selectedVehicle) return;
+      showNotification(`Calling ${selectedVehicle.driver}...`, 'info');
+    }
+    
+    function manageVehicle() {
+      if (!selectedVehicle) return;
+      window.location.href = 'dispatch.html';
+    }
+    
+    // Initialize
+    initializeMap();
+  </script>
+</body>
+</html>

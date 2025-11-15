@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Map - TransiAI Passenger</title>
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body {
+      background: var(--off-white);
+    }
+    
+    .map-container {
+      padding-top: 80px;
+      min-height: 100vh;
+    }
+    
+    .map-layout {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: var(--space-lg);
+      height: calc(100vh - 100px);
+    }
+    
+    .map-sidebar {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl);
+      box-shadow: var(--shadow-md);
+      overflow-y: auto;
+    }
+    
+    .map-view {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .real-map {
+      width: 100%;
+      height: 100%;
+      border-radius: var(--radius-xl);
+    }
+    
+    .map-marker {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background: var(--gradient-primary);
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      animation: bounce 2s ease-in-out infinite;
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .map-marker::after {
+      content: attr(data-icon);
+      transform: rotate(45deg);
+      font-size: var(--text-lg);
+    }
+    
+    .vehicle-marker {
+      background: var(--gradient-tech);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .route-line {
+      position: absolute;
+      height: 4px;
+      background: var(--clay-orange);
+      opacity: 0.6;
+      border-radius: 2px;
+    }
+    
+    .search-section {
+      margin-bottom: var(--space-xl);
+    }
+    
+    .route-card {
+      background: var(--off-white);
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-md);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      border: 2px solid transparent;
+    }
+    
+    .route-card:hover {
+      border-color: var(--clay-orange);
+      transform: translateX(4px);
+    }
+    
+    .route-card.active {
+      border-color: var(--clay-orange);
+      background: rgba(204, 90, 26, 0.1);
+    }
+    
+    .vehicle-info {
+      background: var(--white);
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      z-index: 10;
+      animation: slideInUp 0.3s ease-out;
+    }
+    
+    .eta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: var(--space-xs) var(--space-md);
+      background: rgba(27, 163, 156, 0.1);
+      color: var(--cool-teal);
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      font-weight: var(--weight-semibold);
+    }
+    
+    @keyframes slideInUp {
+      from {
+        transform: translateY(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    @media (max-width: 1024px) {
+      .map-layout {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+      
+      .map-sidebar {
+        order: 2;
+      }
+      
+      .map-view {
+        height: 400px;
+        order: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-brand">
+        <div class="navbar-logo">T</div>
+        <span>TransiAI</span>
+      </a>
+      
+      <button class="navbar-toggle" onclick="toggleMobileMenu()">☰</button>
+      
+      <ul class="navbar-menu">
+        <li><a href="index.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="map.html" class="navbar-link active">Live Map</a></li>
+        <li><a href="queue.html" class="navbar-link">My Queue</a></li>
+        <li><a href="history.html" class="navbar-link">History</a></li>
+        <li><a href="profile.html" class="navbar-link">Profile</a></li>
+        <li><a href="#" onclick="logout()" class="navbar-link">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="map-container">
+    <div class="container">
+      <div class="map-layout">
+        <!-- Sidebar -->
+        <div class="map-sidebar">
+          <div class="search-section">
+            <h2 class="text-2xl font-bold mb-lg">Find Your Route</h2>
+            
+            <div class="form-group">
+              <label class="form-label">From</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                placeholder="Enter pickup location"
+                id="fromLocation"
+              >
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">To</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                placeholder="Enter destination"
+                id="toLocation"
+              >
+            </div>
+            
+            <button class="btn btn-primary btn-full" onclick="searchRoutes()">
+              Search Routes
+            </button>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div>
+            <h3 class="text-lg font-bold mb-md">Available Routes</h3>
+            <div id="routesList">
+              <!-- Routes will be loaded here -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- Map View -->
+        <div class="map-view">
+          <div class="real-map" id="mapView">
+            <!-- Real interactive map will be rendered here -->
+          </div>
+          
+          <!-- Vehicle Info Panel (hidden by default) -->
+          <div class="vehicle-info" id="vehicleInfo" style="display: none;">
+            <div class="flex justify-between items-start mb-md">
+              <div>
+                <h3 class="text-xl font-bold mb-xs" id="vehicleRoute">Route Name</h3>
+                <p class="text-sm text-gray" id="vehicleDetails">Vehicle details</p>
+              </div>
+              <button class="btn btn-sm btn-ghost" onclick="closeVehicleInfo()">✕</button>
+            </div>
+            
+            <div class="flex gap-md mb-lg">
+              <div class="eta-badge">
+                🕐 <span id="vehicleETA">5 min</span>
+              </div>
+              <div class="eta-badge">
+                👥 <span id="vehicleCapacity">28/35</span>
+              </div>
+              <div class="eta-badge">
+                🚌 <span id="vehicleType">Bus</span>
+              </div>
+            </div>
+            
+            <div class="flex gap-md">
+              <button class="btn btn-primary" style="flex: 1;" onclick="bookRoute()">
+                Book This Route
+              </button>
+              <button class="btn btn-outline" onclick="trackVehicle()">
+                Track Live
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="../assets/js/map.js"></script>
+  <script>
+    // Check authentication
+    requireAuth(['passenger']);
+    
+    let selectedRoute = null;
+    let selectedVehicle = null;
+    
+    // Load available routes
+    function loadRoutes() {
+      const routesList = document.getElementById('routesList');
+      const routes = TransiAI.routes;
+      
+      routesList.innerHTML = routes.map(route => `
+        <div class="route-card" onclick="selectRoute(${route.id})">
+          <div class="flex justify-between items-start mb-sm">
+            <h4 class="font-bold">${route.name}</h4>
+            <span class="badge badge-primary">${route.type}</span>
+          </div>
+          <div class="text-sm text-gray mb-sm">
+            ${route.distance} • ${route.duration}
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-lg font-bold text-primary">${formatCurrency(route.price)}</span>
+            <span class="badge badge-success">Available</span>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // Initialize real map with Leaflet
+    let map;
+    let vehicleMarkers = [];
+    
+    function initializeMap() {
+      // Initialize Leaflet map centered on Johannesburg
+      map = MapUtils.initializeMap('mapView', 'johannesburg', 12);
+      
+      // Add route line from Johannesburg to Soweto
+      MapUtils.addRouteLine(map, 'johannesburg', 'soweto', '#CC5A1A');
+      
+      // Add location markers
+      MapUtils.addLocationMarker(map, 'johannesburg', 'Johannesburg CBD', '#1BA39C');
+      MapUtils.addLocationMarker(map, 'soweto', 'Soweto', '#CC5A1A');
+      
+      // Add vehicle markers
+      TransiAI.vehicles.forEach(vehicle => {
+        const marker = MapUtils.addVehicleMarker(map, vehicle, showVehicleInfo);
+        vehicleMarkers.push({ vehicle, marker });
+      });
+      
+      // Simulate vehicle movement every 5 seconds
+      setInterval(() => {
+        vehicleMarkers.forEach(({ vehicle, marker }) => {
+          const currentPos = marker.getLatLng();
+          const newPos = MapUtils.getRandomNearbyCoords(currentPos.lat, currentPos.lng, 0.3);
+          MapUtils.animateVehicle(marker, newPos.lat, newPos.lng, 3000);
+        });
+      }, 5000);
+    }
+    
+    function getVehicleIcon(type) {
+      const icons = {
+        'bus': '🚌',
+        'taxi': '🚕',
+        'van': '🚐',
+        'shuttle': '🚙'
+      };
+      return icons[type] || '🚌';
+    }
+    
+    function selectRoute(routeId) {
+      selectedRoute = TransiAI.routes.find(r => r.id === routeId);
+      
+      // Update UI
+      document.querySelectorAll('.route-card').forEach(card => {
+        card.classList.remove('active');
+      });
+      event.target.closest('.route-card').classList.add('active');
+      
+      // Find vehicle for this route
+      const vehicle = TransiAI.vehicles.find(v => v.route === selectedRoute.name);
+      if (vehicle) {
+        showVehicleInfo(vehicle);
+      }
+      
+      showNotification(`Selected route: ${selectedRoute.name}`, 'info');
+    }
+    
+    function showVehicleInfo(vehicle) {
+      selectedVehicle = vehicle;
+      const infoPanel = document.getElementById('vehicleInfo');
+      
+      document.getElementById('vehicleRoute').textContent = vehicle.route;
+      document.getElementById('vehicleDetails').textContent = `${vehicle.registration} • Driver: ${vehicle.driver}`;
+      document.getElementById('vehicleETA').textContent = calculateETA(15);
+      document.getElementById('vehicleCapacity').textContent = `${vehicle.currentPassengers}/${vehicle.capacity}`;
+      document.getElementById('vehicleType').textContent = vehicle.type.charAt(0).toUpperCase() + vehicle.type.slice(1);
+      
+      infoPanel.style.display = 'block';
+    }
+    
+    function closeVehicleInfo() {
+      document.getElementById('vehicleInfo').style.display = 'none';
+    }
+    
+    function searchRoutes() {
+      const from = document.getElementById('fromLocation').value;
+      const to = document.getElementById('toLocation').value;
+      
+      if (!from || !to) {
+        showNotification('Please enter both pickup and destination locations', 'warning');
+        return;
+      }
+      
+      showNotification(`Searching routes from ${from} to ${to}...`, 'info');
+      
+      // Simulate search
+      setTimeout(() => {
+        showNotification('Found 3 available routes!', 'success');
+      }, 1000);
+    }
+    
+    function bookRoute() {
+      if (!selectedVehicle) {
+        showNotification('Please select a vehicle first', 'warning');
+        return;
+      }
+      
+      // Redirect to queue page
+      window.location.href = `queue.html?vehicle=${selectedVehicle.id}`;
+    }
+    
+    function trackVehicle() {
+      if (!selectedVehicle) {
+        showNotification('Please select a vehicle first', 'warning');
+        return;
+      }
+      
+      showNotification('Live tracking activated! Vehicle location updating...', 'success');
+      
+      // Simulate live tracking
+      let updates = 0;
+      const trackingInterval = setInterval(() => {
+        updates++;
+        showNotification(`Vehicle update ${updates}: Moving along route...`, 'info');
+        
+        if (updates >= 3) {
+          clearInterval(trackingInterval);
+          showNotification('Vehicle arriving at next stop!', 'success');
+        }
+      }, 3000);
+    }
+    
+    // Initialize
+    loadRoutes();
+    initializeMap();
+    
+    // Check for route parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const routeId = urlParams.get('route');
+    if (routeId) {
+      setTimeout(() => {
+        const routeCard = document.querySelector(`[onclick="selectRoute(${routeId})"]`);
+        if (routeCard) routeCard.click();
+      }, 500);
+    }
+  </script>
+</body>
+</html>

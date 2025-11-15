@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Passenger Registration - TransiAI</title>
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    .auth-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gradient-tech);
+      padding: var(--space-xl);
+    }
+    
+    .auth-card {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+      max-width: 500px;
+      width: 100%;
+      padding: var(--space-2xl);
+      animation: scaleIn 0.4s ease-out;
+    }
+    
+    .auth-header {
+      text-align: center;
+      margin-bottom: var(--space-2xl);
+    }
+    
+    .auth-logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto var(--space-lg);
+      background: var(--gradient-tech);
+      border-radius: var(--radius-xl);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-4xl);
+      color: var(--white);
+      font-weight: var(--weight-bold);
+    }
+    
+    .auth-title {
+      font-size: var(--text-3xl);
+      font-weight: var(--weight-bold);
+      color: var(--deep-brown);
+      margin-bottom: var(--space-sm);
+    }
+    
+    .auth-subtitle {
+      color: var(--medium-gray);
+      font-size: var(--text-base);
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-md);
+    }
+    
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-logo">T</div>
+        <h1 class="auth-title">Create Account</h1>
+        <p class="auth-subtitle">Join TransiAI and start your journey</p>
+      </div>
+      
+      <form id="registerForm" onsubmit="handleRegister(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="firstName">First Name</label>
+            <input 
+              type="text" 
+              id="firstName" 
+              class="form-input" 
+              placeholder="Enter first name"
+              required
+            >
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="lastName">Last Name</label>
+            <input 
+              type="text" 
+              id="lastName" 
+              class="form-input" 
+              placeholder="Enter last name"
+              required
+            >
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address</label>
+          <input 
+            type="email" 
+            id="email" 
+            class="form-input" 
+            placeholder="Enter your email"
+            required
+          >
+          <span class="form-help">We'll send your tickets and updates here</span>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="phone">Phone Number</label>
+          <input 
+            type="tel" 
+            id="phone" 
+            class="form-input" 
+            placeholder="+27 XX XXX XXXX"
+            required
+          >
+          <span class="form-help">For emergency contact and notifications</span>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            class="form-input" 
+            placeholder="Create a strong password"
+            minlength="6"
+            required
+          >
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="confirmPassword">Confirm Password</label>
+          <input 
+            type="password" 
+            id="confirmPassword" 
+            class="form-input" 
+            placeholder="Re-enter your password"
+            minlength="6"
+            required
+          >
+        </div>
+        
+        <div class="form-group">
+          <label style="display: flex; align-items: flex-start; gap: var(--space-sm); cursor: pointer;">
+            <input type="checkbox" id="terms" required style="margin-top: 4px;">
+            <span class="text-sm text-gray">
+              I agree to the <a href="#" class="text-primary">Terms of Service</a> and 
+              <a href="#" class="text-primary">Privacy Policy</a>
+            </span>
+          </label>
+        </div>
+        
+        <button type="submit" class="btn btn-secondary btn-full btn-lg">
+          Create Account
+        </button>
+      </form>
+      
+      <div class="divider"></div>
+      
+      <p class="text-center text-sm text-gray">
+        Already have an account? 
+        <a href="login.html" class="text-primary font-semibold">Login here</a>
+      </p>
+      
+      <div class="text-center mt-lg">
+        <a href="../index.html" class="text-sm text-gray">← Back to home</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    function handleRegister(event) {
+      event.preventDefault();
+      
+      const firstName = document.getElementById('firstName').value;
+      const lastName = document.getElementById('lastName').value;
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      
+      // Validate passwords match
+      if (password !== confirmPassword) {
+        showNotification('Passwords do not match', 'error');
+        return;
+      }
+      
+      // Validate email
+      if (!validateEmail(email)) {
+        showNotification('Please enter a valid email address', 'error');
+        return;
+      }
+      
+      // Validate phone
+      if (!validatePhone(phone)) {
+        showNotification('Please enter a valid phone number', 'error');
+        return;
+      }
+      
+      // Show loading state
+      const submitBtn = event.target.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<div class="spinner spinner-sm" style="margin: 0 auto;"></div>';
+      submitBtn.disabled = true;
+      
+      // Simulate API call
+      setTimeout(() => {
+        const result = register({
+          name: `${firstName} ${lastName}`,
+          email: email,
+          phone: phone,
+          password: password,
+          role: 'passenger'
+        });
+        
+        if (result.success) {
+          showNotification('Account created successfully! Redirecting...', 'success');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1500);
+        } else {
+          showNotification(result.message, 'error');
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+        }
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

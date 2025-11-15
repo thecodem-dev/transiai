@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Routes - TransiAI Driver</title>
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body {
+      background: var(--off-white);
+    }
+    
+    .routes-container {
+      padding-top: 80px;
+      min-height: 100vh;
+      padding-bottom: var(--space-2xl);
+    }
+    
+    .routes-header {
+      background: var(--gradient-tech);
+      color: var(--white);
+      padding: var(--space-2xl) 0;
+      margin-bottom: var(--space-xl);
+    }
+    
+    .map-layout {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: var(--space-lg);
+      height: calc(100vh - 200px);
+    }
+    
+    .routes-sidebar {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl);
+      box-shadow: var(--shadow-md);
+      overflow-y: auto;
+    }
+    
+    .route-item {
+      background: var(--off-white);
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-md);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      border: 2px solid transparent;
+    }
+    
+    .route-item:hover {
+      border-color: var(--cool-teal);
+      transform: translateX(4px);
+    }
+    
+    .route-item.active {
+      border-color: var(--cool-teal);
+      background: rgba(27, 163, 156, 0.1);
+    }
+    
+    .route-map {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .real-map {
+      width: 100%;
+      height: 100%;
+      border-radius: var(--radius-xl);
+    }
+    
+    .route-line {
+      position: absolute;
+      height: 6px;
+      background: var(--cool-teal);
+      opacity: 0.8;
+      border-radius: 3px;
+      box-shadow: 0 2px 8px rgba(27, 163, 156, 0.3);
+    }
+    
+    .stop-marker {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background: var(--white);
+      border: 3px solid var(--cool-teal);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-xs);
+      font-weight: var(--weight-bold);
+      color: var(--cool-teal);
+      box-shadow: var(--shadow-md);
+      cursor: pointer;
+      transition: all var(--transition-base);
+    }
+    
+    .stop-marker:hover {
+      transform: scale(1.2);
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .route-info-panel {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      animation: slideInUp 0.3s ease-out;
+    }
+    
+    .turn-by-turn {
+      margin-top: var(--space-lg);
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .turn-item {
+      display: flex;
+      align-items: start;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .turn-item:last-child {
+      border-bottom: none;
+    }
+    
+    .turn-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--gradient-tech);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-lg);
+      flex-shrink: 0;
+    }
+    
+    @media (max-width: 1024px) {
+      .map-layout {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+      
+      .routes-sidebar {
+        order: 2;
+      }
+      
+      .route-map {
+        height: 400px;
+        order: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-brand">
+        <div class="navbar-logo">T</div>
+        <span>TransiAI Driver</span>
+      </a>
+      
+      <button class="navbar-toggle" onclick="toggleMobileMenu()">☰</button>
+      
+      <ul class="navbar-menu">
+        <li><a href="index.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="routes.html" class="navbar-link active">My Routes</a></li>
+        <li><a href="pickups.html" class="navbar-link">Pickups</a></li>
+        <li><a href="earnings.html" class="navbar-link">Earnings</a></li>
+        <li><a href="incidents.html" class="navbar-link">Incidents</a></li>
+        <li><a href="#" onclick="logout()" class="navbar-link">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="routes-container">
+    <!-- Header -->
+    <div class="routes-header">
+      <div class="container">
+        <h1 class="text-4xl font-bold mb-sm">My Routes</h1>
+        <p class="text-lg" style="opacity: 0.9;">View and navigate your assigned routes</p>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="map-layout">
+        <!-- Routes Sidebar -->
+        <div class="routes-sidebar">
+          <h2 class="text-xl font-bold mb-lg">Assigned Routes</h2>
+          
+          <div id="routesList">
+            <!-- Routes will be loaded here -->
+          </div>
+        </div>
+        
+        <!-- Map View -->
+        <div class="route-map">
+          <div class="real-map" id="routeMap">
+            <!-- Real interactive map will be rendered here -->
+          </div>
+          
+          <!-- Route Info Panel -->
+          <div class="route-info-panel" id="routeInfoPanel" style="display: none;">
+            <div class="flex justify-between items-start mb-md">
+              <div>
+                <h3 class="text-xl font-bold mb-xs" id="selectedRouteName">Route Name</h3>
+                <p class="text-sm text-gray" id="selectedRouteDetails">Route details</p>
+              </div>
+              <button class="btn btn-sm btn-ghost" onclick="closeRouteInfo()">✕</button>
+            </div>
+            
+            <div class="flex gap-md mb-lg">
+              <div class="badge badge-info">📍 <span id="routeStops">5 stops</span></div>
+              <div class="badge badge-info">⏱️ <span id="routeDuration">25 min</span></div>
+              <div class="badge badge-info">📏 <span id="routeDistance">15 km</span></div>
+            </div>
+            
+            <div class="flex gap-md">
+              <button class="btn btn-primary" style="flex: 1;" onclick="startNavigation()">
+                🧭 Start Navigation
+              </button>
+              <button class="btn btn-outline" onclick="viewTurnByTurn()">
+                📋 Directions
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="../assets/js/map.js"></script>
+  <script>
+    // Check authentication
+    requireAuth(['driver']);
+    
+    const routes = [
+      {
+        id: 1,
+        name: 'Johannesburg CBD to Soweto',
+        from: 'Park Station',
+        to: 'Soweto',
+        distance: '15 km',
+        duration: '25 min',
+        stops: 5,
+        status: 'active',
+        schedule: '06:00 - 20:00'
+      },
+      {
+        id: 2,
+        name: 'Sandton to Midrand',
+        from: 'Sandton City',
+        to: 'Midrand',
+        distance: '18 km',
+        duration: '30 min',
+        stops: 6,
+        status: 'scheduled',
+        schedule: '07:00 - 19:00'
+      },
+      {
+        id: 3,
+        name: 'Rosebank to Alexandra',
+        from: 'Rosebank Mall',
+        to: 'Alexandra',
+        distance: '12 km',
+        duration: '20 min',
+        stops: 4,
+        status: 'completed',
+        schedule: '05:30 - 22:00'
+      }
+    ];
+    
+    let selectedRoute = null;
+    
+    // Initialize
+    function initializeRoutes() {
+      loadRoutesList();
+      initializeMap();
+    }
+    
+    function loadRoutesList() {
+      const routesList = document.getElementById('routesList');
+      
+      routesList.innerHTML = routes.map(route => `
+        <div class="route-item ${route.status === 'active' ? 'active' : ''}" onclick="selectRoute(${route.id})">
+          <div class="flex justify-between items-start mb-sm">
+            <h3 class="font-bold">${route.name}</h3>
+            <span class="badge badge-${getStatusBadge(route.status)}">${route.status}</span>
+          </div>
+          <div class="text-sm text-gray mb-sm">
+            ${route.from} → ${route.to}
+          </div>
+          <div class="flex justify-between text-sm">
+            <span>📍 ${route.stops} stops</span>
+            <span>⏱️ ${route.duration}</span>
+          </div>
+          <div class="text-xs text-gray mt-sm">
+            Schedule: ${route.schedule}
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function getStatusBadge(status) {
+      const badges = {
+        'active': 'success',
+        'scheduled': 'info',
+        'completed': 'primary'
+      };
+      return badges[status] || 'info';
+    }
+    
+    let map;
+    let currentLocationMarker;
+    
+    function initializeMap() {
+      // Initialize Leaflet map centered on Johannesburg
+      map = MapUtils.initializeMap('routeMap', 'johannesburg', 13);
+      
+      // Add route line from Johannesburg to Soweto
+      MapUtils.addRouteLine(map, 'johannesburg', 'soweto', '#1BA39C');
+      
+      // Add waypoint markers
+      MapUtils.addLocationMarker(map, 'johannesburg', 'Start - Johannesburg CBD', '#1BA39C');
+      MapUtils.addLocationMarker(map, 'parkStation', 'Stop 1 - Park Station', '#DFAA3A');
+      MapUtils.addLocationMarker(map, 'soweto', 'End - Soweto', '#CC5A1A');
+      
+      // Add current vehicle location (driver's position)
+      const currentVehicle = {
+        type: 'bus',
+        registration: 'CA 123 456',
+        location: { lat: -26.2041, lng: 28.0473 },
+        route: 'Johannesburg to Soweto',
+        currentPassengers: 28,
+        capacity: 35,
+        driver: 'You'
+      };
+      
+      currentLocationMarker = MapUtils.addVehicleMarker(map, currentVehicle, null);
+      
+      // Simulate movement along route every 5 seconds
+      setInterval(() => {
+        const currentPos = currentLocationMarker.getLatLng();
+        const newPos = MapUtils.getRandomNearbyCoords(currentPos.lat, currentPos.lng, 0.2);
+        MapUtils.animateVehicle(currentLocationMarker, newPos.lat, newPos.lng, 3000);
+      }, 5000);
+    }
+    
+    function selectRoute(routeId) {
+      selectedRoute = routes.find(r => r.id === routeId);
+      
+      // Update UI
+      document.querySelectorAll('.route-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      event.target.closest('.route-item').classList.add('active');
+      
+      // Show route info
+      showRouteInfo();
+    }
+    
+    function showRouteInfo() {
+      if (!selectedRoute) return;
+      
+      const panel = document.getElementById('routeInfoPanel');
+      document.getElementById('selectedRouteName').textContent = selectedRoute.name;
+      document.getElementById('selectedRouteDetails').textContent = `${selectedRoute.from} to ${selectedRoute.to}`;
+      document.getElementById('routeStops').textContent = `${selectedRoute.stops} stops`;
+      document.getElementById('routeDuration').textContent = selectedRoute.duration;
+      document.getElementById('routeDistance').textContent = selectedRoute.distance;
+      
+      panel.style.display = 'block';
+    }
+    
+    function closeRouteInfo() {
+      document.getElementById('routeInfoPanel').style.display = 'none';
+    }
+    
+    function showStopInfo(stopNum) {
+      const stops = [
+        'Park Station',
+        'Braamfontein',
+        'Newtown',
+        'Orlando',
+        'Soweto Central'
+      ];
+      
+      showNotification(`Stop ${stopNum}: ${stops[stopNum - 1]}`, 'info');
+    }
+    
+    function startNavigation() {
+      if (!selectedRoute) return;
+      
+      showModal(
+        'Start Navigation',
+        `
+          <div class="text-center mb-lg">
+            <div style="font-size: 3rem; margin-bottom: var(--space-md);">🧭</div>
+            <h3 class="text-xl font-bold mb-md">${selectedRoute.name}</h3>
+            <p class="text-gray">Turn-by-turn navigation will guide you through your route.</p>
+          </div>
+          <div class="alert alert-info">
+            <strong>Note:</strong> Make sure GPS is enabled on your device.
+          </div>
+        `,
+        [
+          { label: 'Cancel', class: 'btn-ghost', onclick: 'closeModal()' },
+          { label: 'Start Navigation', class: 'btn-primary', onclick: 'confirmNavigation()' }
+        ]
+      );
+    }
+    
+    function confirmNavigation() {
+      closeModal();
+      showNotification('Navigation started! Follow the directions.', 'success');
+      
+      // Simulate navigation updates
+      setTimeout(() => {
+        showNotification('In 500m, turn right onto Main Street', 'info');
+      }, 2000);
+      
+      setTimeout(() => {
+        showNotification('Approaching Stop 1: Park Station', 'warning');
+      }, 5000);
+    }
+    
+    function viewTurnByTurn() {
+      showModal(
+        'Turn-by-Turn Directions',
+        `
+          <div class="turn-by-turn">
+            <div class="turn-item">
+              <div class="turn-icon">➡️</div>
+              <div>
+                <div class="font-semibold">Start at Park Station</div>
+                <div class="text-sm text-gray">Head south on Wolmarans Street</div>
+              </div>
+            </div>
+            <div class="turn-item">
+              <div class="turn-icon">↗️</div>
+              <div>
+                <div class="font-semibold">Turn right onto Main Street</div>
+                <div class="text-sm text-gray">Continue for 2.5 km</div>
+              </div>
+            </div>
+            <div class="turn-item">
+              <div class="turn-icon">⬆️</div>
+              <div>
+                <div class="font-semibold">Continue straight</div>
+                <div class="text-sm text-gray">Pass through Braamfontein</div>
+              </div>
+            </div>
+            <div class="turn-item">
+              <div class="turn-icon">↖️</div>
+              <div>
+                <div class="font-semibold">Turn left onto Soweto Highway</div>
+                <div class="text-sm text-gray">Continue for 8 km</div>
+              </div>
+            </div>
+            <div class="turn-item">
+              <div class="turn-icon">🏁</div>
+              <div>
+                <div class="font-semibold">Arrive at Soweto Central</div>
+                <div class="text-sm text-gray">Your destination</div>
+              </div>
+            </div>
+          </div>
+        `,
+        [
+          { label: 'Close', class: 'btn-primary', onclick: 'closeModal()' }
+        ]
+      );
+    }
+    
+    // Initialize
+    initializeRoutes();
+    
+    // Auto-select first active route
+    const activeRoute = routes.find(r => r.status === 'active');
+    if (activeRoute) {
+      setTimeout(() => {
+        selectedRoute = activeRoute;
+        showRouteInfo();
+      }, 500);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - TransiAI Passenger</title>
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body {
+      background: var(--off-white);
+    }
+    
+    .profile-container {
+      padding-top: 80px;
+      min-height: 100vh;
+      padding-bottom: var(--space-2xl);
+    }
+    
+    .profile-header {
+      background: var(--gradient-primary);
+      color: var(--white);
+      padding: var(--space-2xl) 0;
+      margin-bottom: var(--space-xl);
+    }
+    
+    .profile-info {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xl);
+      flex-wrap: wrap;
+    }
+    
+    .profile-avatar {
+      width: 120px;
+      height: 120px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-5xl);
+      font-weight: var(--weight-bold);
+      border: 4px solid var(--white);
+      box-shadow: var(--shadow-xl);
+    }
+    
+    .profile-details h1 {
+      color: var(--white);
+      margin-bottom: var(--space-sm);
+    }
+    
+    .profile-meta {
+      display: flex;
+      gap: var(--space-xl);
+      flex-wrap: wrap;
+      opacity: 0.9;
+    }
+    
+    .profile-meta-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+    
+    .profile-content {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: var(--space-xl);
+    }
+    
+    .profile-sidebar {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl);
+      box-shadow: var(--shadow-md);
+      height: fit-content;
+    }
+    
+    .sidebar-menu {
+      list-style: none;
+    }
+    
+    .sidebar-menu-item {
+      padding: var(--space-md);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      margin-bottom: var(--space-sm);
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+    
+    .sidebar-menu-item:hover {
+      background: rgba(204, 90, 26, 0.1);
+    }
+    
+    .sidebar-menu-item.active {
+      background: var(--gradient-primary);
+      color: var(--white);
+    }
+    
+    .profile-main {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      padding: var(--space-2xl);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .section {
+      display: none;
+    }
+    
+    .section.active {
+      display: block;
+      animation: fadeInUp 0.3s ease-out;
+    }
+    
+    .wallet-section {
+      background: var(--gradient-tech);
+      color: var(--white);
+      padding: var(--space-2xl);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .wallet-balance {
+      font-size: var(--text-5xl);
+      font-weight: var(--weight-bold);
+      margin: var(--space-lg) 0;
+    }
+    
+    .wallet-actions {
+      display: flex;
+      gap: var(--space-md);
+    }
+    
+    .settings-group {
+      margin-bottom: var(--space-2xl);
+    }
+    
+    .settings-group:last-child {
+      margin-bottom: 0;
+    }
+    
+    .settings-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-lg);
+      border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .settings-item:last-child {
+      border-bottom: none;
+    }
+    
+    .toggle-switch {
+      position: relative;
+      width: 50px;
+      height: 26px;
+      background: var(--light-gray);
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: background var(--transition-fast);
+    }
+    
+    .toggle-switch.active {
+      background: var(--clay-orange);
+    }
+    
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      background: var(--white);
+      border-radius: 50%;
+      transition: transform var(--transition-fast);
+    }
+    
+    .toggle-switch.active::after {
+      transform: translateX(24px);
+    }
+    
+    @media (max-width: 1024px) {
+      .profile-content {
+        grid-template-columns: 1fr;
+      }
+      
+      .profile-sidebar {
+        order: 2;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-brand">
+        <div class="navbar-logo">T</div>
+        <span>TransiAI</span>
+      </a>
+      
+      <button class="navbar-toggle" onclick="toggleMobileMenu()">☰</button>
+      
+      <ul class="navbar-menu">
+        <li><a href="index.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="map.html" class="navbar-link">Live Map</a></li>
+        <li><a href="queue.html" class="navbar-link">My Queue</a></li>
+        <li><a href="history.html" class="navbar-link">History</a></li>
+        <li><a href="profile.html" class="navbar-link active">Profile</a></li>
+        <li><a href="#" onclick="logout()" class="navbar-link">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="profile-container">
+    <!-- Header -->
+    <div class="profile-header">
+      <div class="container">
+        <div class="profile-info">
+          <div class="profile-avatar" id="profileAvatar">TM</div>
+          <div class="profile-details">
+            <h1 class="text-4xl font-bold" id="profileName">Thabo Mbeki</h1>
+            <div class="profile-meta">
+              <span class="profile-meta-item">📧 <span id="profileEmail">thabo@example.com</span></span>
+              <span class="profile-meta-item">📱 <span id="profilePhone">+27 82 123 4567</span></span>
+              <span class="profile-meta-item">🎫 Member since Jan 2025</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="profile-content">
+        <!-- Sidebar -->
+        <div class="profile-sidebar">
+          <ul class="sidebar-menu">
+            <li class="sidebar-menu-item active" onclick="showSection('account')">
+              <span>👤</span>
+              <span>Account Info</span>
+            </li>
+            <li class="sidebar-menu-item" onclick="showSection('wallet')">
+              <span>💳</span>
+              <span>Wallet</span>
+            </li>
+            <li class="sidebar-menu-item" onclick="showSection('preferences')">
+              <span>⚙️</span>
+              <span>Preferences</span>
+            </li>
+            <li class="sidebar-menu-item" onclick="showSection('notifications')">
+              <span>🔔</span>
+              <span>Notifications</span>
+            </li>
+            <li class="sidebar-menu-item" onclick="showSection('security')">
+              <span>🔒</span>
+              <span>Security</span>
+            </li>
+            <li class="sidebar-menu-item" onclick="showSection('help')">
+              <span>❓</span>
+              <span>Help & Support</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="profile-main">
+          <!-- Account Info Section -->
+          <div id="account" class="section active">
+            <h2 class="text-2xl font-bold mb-xl">Account Information</h2>
+            
+            <form id="accountForm" onsubmit="updateAccount(event)">
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-input" id="accountName" value="Thabo Mbeki">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" class="form-input" id="accountEmail" value="thabo@example.com">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" class="form-input" id="accountPhone" value="+27 82 123 4567">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Date of Birth</label>
+                <input type="date" class="form-input" id="accountDOB">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Address</label>
+                <textarea class="form-textarea" id="accountAddress" placeholder="Enter your address"></textarea>
+              </div>
+              
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+            </form>
+          </div>
+
+          <!-- Wallet Section -->
+          <div id="wallet" class="section">
+            <h2 class="text-2xl font-bold mb-xl">My Wallet</h2>
+            
+            <div class="wallet-section">
+              <div class="text-lg" style="opacity: 0.9;">Current Balance</div>
+              <div class="wallet-balance" id="walletBalanceDisplay">R 0.00</div>
+              <div class="wallet-actions">
+                <button class="btn btn-lg" style="background: white; color: var(--cool-teal);" onclick="topUpWallet()">
+                  💰 Top Up
+                </button>
+                <button class="btn btn-lg btn-outline" style="border-color: white; color: white;" onclick="viewTransactions()">
+                  📊 Transactions
+                </button>
+              </div>
+            </div>
+            
+            <h3 class="text-xl font-bold mb-md">Payment Methods</h3>
+            <div class="card mb-lg">
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-md">
+                  <div style="width: 50px; height: 35px; background: var(--gradient-primary); border-radius: var(--radius-sm);"></div>
+                  <div>
+                    <div class="font-semibold">•••• •••• •••• 4567</div>
+                    <div class="text-sm text-gray">Expires 12/26</div>
+                  </div>
+                </div>
+                <span class="badge badge-primary">Default</span>
+              </div>
+            </div>
+            
+            <button class="btn btn-outline" onclick="addPaymentMethod()">
+              + Add Payment Method
+            </button>
+          </div>
+
+          <!-- Preferences Section -->
+          <div id="preferences" class="section">
+            <h2 class="text-2xl font-bold mb-xl">Preferences</h2>
+            
+            <div class="settings-group">
+              <h3 class="text-lg font-bold mb-md">Language & Region</h3>
+              <div class="settings-item">
+                <div>
+                  <div class="font-semibold">Language</div>
+                  <div class="text-sm text-gray">Choose your preferred language</div>
+                </div>
+                <select class="form-select" style="width: 200px;">
+                  <option>English</option>
+                  <option>Afrikaans</option>
+                  <option>Zulu</option>
+                  <option>Xhosa</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="settings-group">
+              <h3 class="text-lg font-bold mb-md">Display</h3>
+              <div class="settings-item">
+                <div>
+                  <div class="font-semibold">Dark Mode</div>
+                  <div class="text-sm text-gray">Use dark theme</div>
+                </div>
+                <div class="toggle-switch" onclick="toggleSetting(this)"></div>
+              </div>
+              <div class="settings-item">
+                <div>
+                  <div class="font-semibold">Compact View</div>
+                  <div class="text-sm text-gray">Show more content on screen</div>
+                </div>
+                <div class="toggle-switch" onclick="toggleSetting(this)"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notifications Section -->
+          <div id="notifications" class="section">
+            <h2 class="text-2xl font-bold mb-xl">Notification Settings</h2>
+            
+            <div class="settings-group">
+              <h3 class="text-lg font-bold mb-md">Push Notifications</h3>
+              <div class="settings-item">
+                <div>
+                  <div class="font-semibold">Trip Updates</div>
+                  <div class="text-sm text-gray">Get notified about your trips</div>
+                </div>
+                <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+              </div>
+              <div class="settings-item">
+                <div>
+                  <div class="font-semibold">Queue Alerts</div>
+                  <div class="text-sm text-gray">When it's your turn to board</div>
+                </div>
+                <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+              </div>
+              <div class="settings-item">
+                <div>
+                  <div class="font-semibold">Promotions</div>
+                  <div class="text-sm text-gray">Special offers and discounts</div>
+                </div>
+                <div class="toggle-switch" onclick="toggleSetting(this)"></div>
+              </div>
+            </div>
+            
+            <div class="settings-group">
+              <h3 class="text-lg font-bold mb-md">Email Notifications</h3>
+              <div class="settings-item">
+                <div>
+                  <div class="font-semibold">Receipts</div>
+                  <div class="text-sm text-gray">Email receipts after each trip</div>
+                </div>
+                <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+              </div>
+              <div class="settings-item">
+                <div>
+                  <div class="font-semibold">Weekly Summary</div>
+                  <div class="text-sm text-gray">Your weekly travel summary</div>
+                </div>
+                <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security Section -->
+          <div id="security" class="section">
+            <h2 class="text-2xl font-bold mb-xl">Security Settings</h2>
+            
+            <div class="settings-group">
+              <h3 class="text-lg font-bold mb-md">Password</h3>
+              <button class="btn btn-outline" onclick="changePassword()">
+                Change Password
+              </button>
+            </div>
+            
+            <div class="settings-group">
+              <h3 class="text-lg font-bold mb-md">Two-Factor Authentication</h3>
+              <div class="settings-item">
+                <div>
+                  <div class="font-semibold">Enable 2FA</div>
+                  <div class="text-sm text-gray">Add extra security to your account</div>
+                </div>
+                <div class="toggle-switch" onclick="toggleSetting(this)"></div>
+              </div>
+            </div>
+            
+            <div class="settings-group">
+              <h3 class="text-lg font-bold mb-md">Active Sessions</h3>
+              <div class="card">
+                <div class="flex justify-between items-center mb-md">
+                  <div>
+                    <div class="font-semibold">Current Device</div>
+                    <div class="text-sm text-gray">Windows • Chrome • Johannesburg</div>
+                  </div>
+                  <span class="badge badge-success">Active</span>
+                </div>
+                <button class="btn btn-sm btn-outline">Sign Out Other Devices</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Help Section -->
+          <div id="help" class="section">
+            <h2 class="text-2xl font-bold mb-xl">Help & Support</h2>
+            
+            <div class="grid md:grid-cols-2 gap-lg mb-xl">
+              <div class="card hover-lift" style="cursor: pointer;">
+                <div style="font-size: 2rem; margin-bottom: var(--space-md);">📚</div>
+                <h3 class="text-lg font-bold mb-sm">Help Center</h3>
+                <p class="text-sm text-gray">Browse articles and guides</p>
+              </div>
+              
+              <div class="card hover-lift" style="cursor: pointer;" onclick="contactSupport()">
+                <div style="font-size: 2rem; margin-bottom: var(--space-md);">💬</div>
+                <h3 class="text-lg font-bold mb-sm">Contact Support</h3>
+                <p class="text-sm text-gray">Get help from our team</p>
+              </div>
+              
+              <div class="card hover-lift" style="cursor: pointer;">
+                <div style="font-size: 2rem; margin-bottom: var(--space-md);">📱</div>
+                <h3 class="text-lg font-bold mb-sm">Report Issue</h3>
+                <p class="text-sm text-gray">Report a technical problem</p>
+              </div>
+              
+              <div class="card hover-lift" style="cursor: pointer;">
+                <div style="font-size: 2rem; margin-bottom: var(--space-md);">⭐</div>
+                <h3 class="text-lg font-bold mb-sm">Feedback</h3>
+                <p class="text-sm text-gray">Share your suggestions</p>
+              </div>
+            </div>
+            
+            <div class="card">
+              <h3 class="text-lg font-bold mb-md">About TransiAI</h3>
+              <p class="text-sm text-gray mb-md">Version 1.0.0</p>
+              <div class="flex gap-md">
+                <a href="#" class="text-sm text-primary">Terms of Service</a>
+                <a href="#" class="text-sm text-primary">Privacy Policy</a>
+                <a href="#" class="text-sm text-primary">Licenses</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    // Check authentication
+    requireAuth(['passenger']);
+    
+    const user = getCurrentUser();
+    
+    // Initialize profile
+    function initializeProfile() {
+      document.getElementById('profileName').textContent = user.name;
+      document.getElementById('profileEmail').textContent = user.email;
+      document.getElementById('profilePhone').textContent = user.phone;
+      document.getElementById('profileAvatar').textContent = user.avatar;
+      
+      document.getElementById('accountName').value = user.name;
+      document.getElementById('accountEmail').value = user.email;
+      document.getElementById('accountPhone').value = user.phone;
+      
+      document.getElementById('walletBalanceDisplay').textContent = formatCurrency(user.wallet || 0);
+    }
+    
+    function showSection(sectionId) {
+      // Hide all sections
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+      });
+      
+      // Show selected section
+      document.getElementById(sectionId).classList.add('active');
+      
+      // Update sidebar
+      document.querySelectorAll('.sidebar-menu-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      event.target.closest('.sidebar-menu-item').classList.add('active');
+    }
+    
+    function updateAccount(event) {
+      event.preventDefault();
+      
+      user.name = document.getElementById('accountName').value;
+      user.email = document.getElementById('accountEmail').value;
+      user.phone = document.getElementById('accountPhone').value;
+      
+      localStorage.setItem('transiai_user', JSON.stringify(user));
+      
+      showNotification('Account updated successfully!', 'success');
+      initializeProfile();
+    }
+    
+    function toggleSetting(element) {
+      element.classList.toggle('active');
+      showNotification('Setting updated', 'success');
+    }
+    
+    function topUpWallet() {
+      showModal(
+        'Top Up Wallet',
+        `
+          <div class="form-group">
+            <label class="form-label">Amount (R)</label>
+            <input type="number" id="topUpAmount" class="form-input" placeholder="Enter amount" min="10" step="10" value="100">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payment Method</label>
+            <select class="form-select">
+              <option>•••• 4567 (Default)</option>
+              <option>Mobile Money</option>
+              <option>Bank Transfer</option>
+            </select>
+          </div>
+        `,
+        [
+          { label: 'Cancel', class: 'btn-ghost', onclick: 'closeModal()' },
+          { label: 'Top Up', class: 'btn-primary', onclick: 'processTopUp()' }
+        ]
+      );
+    }
+    
+    function processTopUp() {
+      const amount = parseFloat(document.getElementById('topUpAmount').value);
+      if (amount && amount >= 10) {
+        user.wallet = (user.wallet || 0) + amount;
+        localStorage.setItem('transiai_user', JSON.stringify(user));
+        document.getElementById('walletBalanceDisplay').textContent = formatCurrency(user.wallet);
+        closeModal();
+        showNotification(`Successfully added ${formatCurrency(amount)} to your wallet!`, 'success');
+      }
+    }
+    
+    function viewTransactions() {
+      showNotification('Loading transactions...', 'info');
+    }
+    
+    function addPaymentMethod() {
+      showNotification('Add payment method feature coming soon!', 'info');
+    }
+    
+    function changePassword() {
+      showModal(
+        'Change Password',
+        `
+          <div class="form-group">
+            <label class="form-label">Current Password</label>
+            <input type="password" class="form-input" placeholder="Enter current password">
+          </div>
+          <div class="form-group">
+            <label class="form-label">New Password</label>
+            <input type="password" class="form-input" placeholder="Enter new password">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm New Password</label>
+            <input type="password" class="form-input" placeholder="Confirm new password">
+          </div>
+        `,
+        [
+          { label: 'Cancel', class: 'btn-ghost', onclick: 'closeModal()' },
+          { label: 'Update Password', class: 'btn-primary', onclick: 'updatePassword()' }
+        ]
+      );
+    }
+    
+    function updatePassword() {
+      closeModal();
+      showNotification('Password updated successfully!', 'success');
+    }
+    
+    function contactSupport() {
+      showModal(
+        'Contact Support',
+        `
+          <div class="form-group">
+            <label class="form-label">Subject</label>
+            <input type="text" class="form-input" placeholder="What do you need help with?">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Message</label>
+            <textarea class="form-textarea" placeholder="Describe your issue..." rows="5"></textarea>
+          </div>
+        `,
+        [
+          { label: 'Cancel', class: 'btn-ghost', onclick: 'closeModal()' },
+          { label: 'Send', class: 'btn-primary', onclick: 'sendSupportMessage()' }
+        ]
+      );
+    }
+    
+    function sendSupportMessage() {
+      closeModal();
+      showNotification('Support request sent! We\'ll get back to you soon.', 'success');
+    }
+    
+    // Initialize
+    initializeProfile();
+  </script>
+</body>
+</html>

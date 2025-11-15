@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trip History - TransiAI Passenger</title>
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body {
+      background: var(--off-white);
+    }
+    
+    .history-container {
+      padding-top: 80px;
+      min-height: 100vh;
+      padding-bottom: var(--space-2xl);
+    }
+    
+    .history-header {
+      background: var(--gradient-primary);
+      color: var(--white);
+      padding: var(--space-2xl) 0;
+      margin-bottom: var(--space-xl);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-lg);
+      margin-bottom: var(--space-2xl);
+    }
+    
+    .stat-card {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: var(--text-4xl);
+      font-weight: var(--weight-bold);
+      color: var(--clay-orange);
+      margin: var(--space-sm) 0;
+    }
+    
+    .stat-label {
+      color: var(--medium-gray);
+      font-size: var(--text-sm);
+    }
+    
+    .filters-section {
+      background: var(--white);
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .filter-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-md);
+      align-items: end;
+    }
+    
+    .trip-timeline {
+      position: relative;
+    }
+    
+    .timeline-item {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      margin-bottom: var(--space-lg);
+      position: relative;
+      padding-left: var(--space-3xl);
+      transition: all var(--transition-base);
+    }
+    
+    .timeline-item:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateX(4px);
+    }
+    
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: var(--space-lg);
+      top: var(--space-xl);
+      width: 16px;
+      height: 16px;
+      background: var(--clay-orange);
+      border-radius: 50%;
+      border: 4px solid var(--white);
+      box-shadow: 0 0 0 2px var(--clay-orange);
+    }
+    
+    .timeline-item::after {
+      content: '';
+      position: absolute;
+      left: calc(var(--space-lg) + 7px);
+      top: calc(var(--space-xl) + 20px);
+      width: 2px;
+      height: calc(100% - var(--space-xl) - 10px);
+      background: var(--light-gray);
+    }
+    
+    .timeline-item:last-child::after {
+      display: none;
+    }
+    
+    .trip-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: var(--space-md);
+      flex-wrap: wrap;
+      gap: var(--space-md);
+    }
+    
+    .trip-route {
+      font-size: var(--text-lg);
+      font-weight: var(--weight-bold);
+      color: var(--deep-brown);
+    }
+    
+    .trip-meta {
+      display: flex;
+      gap: var(--space-lg);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-md);
+      font-size: var(--text-sm);
+      color: var(--medium-gray);
+    }
+    
+    .trip-meta-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+    
+    .trip-actions {
+      display: flex;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: var(--space-3xl);
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .empty-icon {
+      font-size: 4rem;
+      margin-bottom: var(--space-lg);
+    }
+    
+    @media (max-width: 768px) {
+      .trip-header {
+        flex-direction: column;
+      }
+      
+      .trip-actions {
+        width: 100%;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-brand">
+        <div class="navbar-logo">T</div>
+        <span>TransiAI</span>
+      </a>
+      
+      <button class="navbar-toggle" onclick="toggleMobileMenu()">☰</button>
+      
+      <ul class="navbar-menu">
+        <li><a href="index.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="map.html" class="navbar-link">Live Map</a></li>
+        <li><a href="queue.html" class="navbar-link">My Queue</a></li>
+        <li><a href="history.html" class="navbar-link active">History</a></li>
+        <li><a href="profile.html" class="navbar-link">Profile</a></li>
+        <li><a href="#" onclick="logout()" class="navbar-link">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="history-container">
+    <!-- Header -->
+    <div class="history-header">
+      <div class="container">
+        <h1 class="text-4xl font-bold mb-sm">Trip History</h1>
+        <p class="text-lg" style="opacity: 0.9;">View all your past journeys and receipts</p>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Statistics -->
+      <div class="stats-grid">
+        <div class="stat-card stagger-item">
+          <div class="stat-label">Total Trips</div>
+          <div class="stat-value" id="totalTrips">0</div>
+          <div class="text-sm text-gray">All time</div>
+        </div>
+        
+        <div class="stat-card stagger-item">
+          <div class="stat-label">Total Spent</div>
+          <div class="stat-value" id="totalSpent">R 0</div>
+          <div class="text-sm text-gray">This month</div>
+        </div>
+        
+        <div class="stat-card stagger-item">
+          <div class="stat-label">Favorite Route</div>
+          <div class="stat-value" style="font-size: var(--text-xl);" id="favoriteRoute">-</div>
+          <div class="text-sm text-gray">Most traveled</div>
+        </div>
+        
+        <div class="stat-card stagger-item">
+          <div class="stat-label">CO₂ Saved</div>
+          <div class="stat-value" id="co2Saved">0</div>
+          <div class="text-sm text-gray">kg this year</div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters-section">
+        <div class="filter-row">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="filterStatus" onchange="filterTrips()">
+              <option value="all">All Trips</option>
+              <option value="completed">Completed</option>
+              <option value="active">Active</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Date Range</label>
+            <select class="form-select" id="filterDate" onchange="filterTrips()">
+              <option value="all">All Time</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+            </select>
+          </div>
+          
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Search</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              placeholder="Search routes..."
+              id="searchInput"
+              oninput="filterTrips()"
+            >
+          </div>
+          
+          <button class="btn btn-outline" onclick="exportHistory()">
+            📥 Export
+          </button>
+        </div>
+      </div>
+
+      <!-- Trip Timeline -->
+      <div class="trip-timeline" id="tripTimeline">
+        <!-- Trips will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    // Check authentication
+    requireAuth(['passenger']);
+    
+    const user = getCurrentUser();
+    let allTrips = [];
+    let filteredTrips = [];
+    
+    // Initialize
+    function initializeHistory() {
+      // Get user's trips
+      allTrips = TransiAI.trips.filter(trip => trip.userId === user.id);
+      filteredTrips = [...allTrips];
+      
+      // Calculate statistics
+      calculateStats();
+      
+      // Load trips
+      loadTrips();
+    }
+    
+    function calculateStats() {
+      const totalTrips = allTrips.length;
+      const totalSpent = allTrips.reduce((sum, trip) => sum + trip.price, 0);
+      
+      // Find favorite route
+      const routeCounts = {};
+      allTrips.forEach(trip => {
+        routeCounts[trip.route] = (routeCounts[trip.route] || 0) + 1;
+      });
+      const favoriteRoute = Object.keys(routeCounts).reduce((a, b) => 
+        routeCounts[a] > routeCounts[b] ? a : b, '-'
+      );
+      
+      // Calculate CO2 saved (assuming 120g CO2 per km saved vs car)
+      const co2Saved = Math.round(totalTrips * 15 * 0.12); // 15km average trip
+      
+      // Update UI
+      document.getElementById('totalTrips').textContent = totalTrips;
+      document.getElementById('totalSpent').textContent = formatCurrency(totalSpent);
+      document.getElementById('favoriteRoute').textContent = favoriteRoute.split(' to ')[0] || '-';
+      document.getElementById('co2Saved').textContent = co2Saved;
+    }
+    
+    function loadTrips() {
+      const timeline = document.getElementById('tripTimeline');
+      
+      if (filteredTrips.length === 0) {
+        timeline.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🚌</div>
+            <h3 class="text-2xl font-bold mb-md">No trips found</h3>
+            <p class="text-gray mb-xl">Start your journey today!</p>
+            <a href="map.html" class="btn btn-primary">Find a Route</a>
+          </div>
+        `;
+        return;
+      }
+      
+      timeline.innerHTML = filteredTrips.map(trip => `
+        <div class="timeline-item">
+          <div class="trip-header">
+            <div>
+              <div class="trip-route">${trip.route}</div>
+              <div class="trip-meta">
+                <span class="trip-meta-item">📅 ${formatDate(trip.date)}</span>
+                <span class="trip-meta-item">🕐 ${trip.time}</span>
+                <span class="trip-meta-item">🎫 ${trip.queueNumber}</span>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div class="badge badge-${getStatusClass(trip.status)}">${trip.status}</div>
+              <div class="text-2xl font-bold text-primary mt-xs">${formatCurrency(trip.price)}</div>
+            </div>
+          </div>
+          
+          <div class="trip-actions">
+            <button class="btn btn-sm btn-outline" onclick="viewReceipt(${trip.id})">
+              📄 Receipt
+            </button>
+            <button class="btn btn-sm btn-outline" onclick="rebookTrip('${trip.route}')">
+              🔄 Book Again
+            </button>
+            ${trip.status === 'completed' ? `
+              <button class="btn btn-sm btn-outline" onclick="rateTrip(${trip.id})">
+                ⭐ Rate
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function getStatusClass(status) {
+      const classes = {
+        'completed': 'success',
+        'active': 'info',
+        'cancelled': 'error'
+      };
+      return classes[status] || 'info';
+    }
+    
+    function filterTrips() {
+      const statusFilter = document.getElementById('filterStatus').value;
+      const dateFilter = document.getElementById('filterDate').value;
+      const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+      
+      filteredTrips = allTrips.filter(trip => {
+        // Status filter
+        if (statusFilter !== 'all' && trip.status !== statusFilter) {
+          return false;
+        }
+        
+        // Date filter
+        if (dateFilter !== 'all') {
+          const tripDate = new Date(trip.date);
+          const today = new Date();
+          
+          if (dateFilter === 'today') {
+            if (tripDate.toDateString() !== today.toDateString()) return false;
+          } else if (dateFilter === 'week') {
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            if (tripDate < weekAgo) return false;
+          } else if (dateFilter === 'month') {
+            if (tripDate.getMonth() !== today.getMonth()) return false;
+          }
+        }
+        
+        // Search filter
+        if (searchQuery && !trip.route.toLowerCase().includes(searchQuery)) {
+          return false;
+        }
+        
+        return true;
+      });
+      
+      loadTrips();
+    }
+    
+    function viewReceipt(tripId) {
+      const trip = allTrips.find(t => t.id === tripId);
+      if (!trip) return;
+      
+      showModal(
+        'Trip Receipt',
+        `
+          <div class="text-center mb-lg">
+            <div style="font-size: 3rem; margin-bottom: var(--space-md);">🧾</div>
+            <h3 class="text-xl font-bold">Receipt #${trip.id}</h3>
+          </div>
+          
+          <div style="border: 2px dashed var(--light-gray); padding: var(--space-lg); border-radius: var(--radius-md);">
+            <div class="detail-row" style="display: flex; justify-content: space-between; padding: var(--space-sm) 0; border-bottom: 1px solid var(--light-gray);">
+              <span class="text-gray">Route</span>
+              <span class="font-semibold">${trip.route}</span>
+            </div>
+            <div class="detail-row" style="display: flex; justify-content: space-between; padding: var(--space-sm) 0; border-bottom: 1px solid var(--light-gray);">
+              <span class="text-gray">Date</span>
+              <span class="font-semibold">${formatDate(trip.date)}</span>
+            </div>
+            <div class="detail-row" style="display: flex; justify-content: space-between; padding: var(--space-sm) 0; border-bottom: 1px solid var(--light-gray);">
+              <span class="text-gray">Time</span>
+              <span class="font-semibold">${trip.time}</span>
+            </div>
+            <div class="detail-row" style="display: flex; justify-content: space-between; padding: var(--space-sm) 0; border-bottom: 1px solid var(--light-gray);">
+              <span class="text-gray">Queue Number</span>
+              <span class="font-semibold">${trip.queueNumber}</span>
+            </div>
+            <div class="detail-row" style="display: flex; justify-content: space-between; padding: var(--space-md) 0; margin-top: var(--space-md); border-top: 2px solid var(--light-gray);">
+              <span class="text-lg font-bold">Total</span>
+              <span class="text-2xl font-bold text-primary">${formatCurrency(trip.price)}</span>
+            </div>
+          </div>
+        `,
+        [
+          {
+            label: 'Download PDF',
+            class: 'btn-outline',
+            onclick: 'downloadReceipt(' + trip.id + ')'
+          },
+          {
+            label: 'Close',
+            class: 'btn-primary',
+            onclick: 'closeModal()'
+          }
+        ]
+      );
+    }
+    
+    function downloadReceipt(tripId) {
+      closeModal();
+      showNotification('Receipt downloaded successfully!', 'success');
+    }
+    
+    function rebookTrip(route) {
+      showNotification(`Searching for ${route}...`, 'info');
+      setTimeout(() => {
+        window.location.href = 'map.html';
+      }, 1000);
+    }
+    
+    function rateTrip(tripId) {
+      showModal(
+        'Rate Your Trip',
+        `
+          <div class="text-center mb-lg">
+            <p class="text-gray mb-md">How was your experience?</p>
+            <div style="font-size: 2rem; display: flex; justify-content: center; gap: var(--space-sm);">
+              <span class="rating-star" onclick="selectRating(1)">⭐</span>
+              <span class="rating-star" onclick="selectRating(2)">⭐</span>
+              <span class="rating-star" onclick="selectRating(3)">⭐</span>
+              <span class="rating-star" onclick="selectRating(4)">⭐</span>
+              <span class="rating-star" onclick="selectRating(5)">⭐</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Comments (Optional)</label>
+            <textarea class="form-textarea" placeholder="Share your feedback..."></textarea>
+          </div>
+        `,
+        [
+          {
+            label: 'Cancel',
+            class: 'btn-ghost',
+            onclick: 'closeModal()'
+          },
+          {
+            label: 'Submit Rating',
+            class: 'btn-primary',
+            onclick: 'submitRating(' + tripId + ')'
+          }
+        ]
+      );
+    }
+    
+    function selectRating(stars) {
+      const starElements = document.querySelectorAll('.rating-star');
+      starElements.forEach((star, index) => {
+        star.style.opacity = index < stars ? '1' : '0.3';
+        star.style.cursor = 'pointer';
+      });
+    }
+    
+    function submitRating(tripId) {
+      closeModal();
+      showNotification('Thank you for your feedback!', 'success');
+    }
+    
+    function exportHistory() {
+      showNotification('Exporting trip history...', 'info');
+      setTimeout(() => {
+        showNotification('History exported successfully!', 'success');
+      }, 1000);
+    }
+    
+    // Initialize
+    initializeHistory();
+  </script>
+</body>
+</html>

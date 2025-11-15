@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Insights - TransiAI Admin</title>
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body {
+      background: var(--off-white);
+      margin: 0;
+      padding: 0;
+    }
+    
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+    
+    .admin-sidebar {
+      background: linear-gradient(180deg, var(--deep-indigo) 0%, var(--deep-brown) 100%);
+      color: var(--white);
+      padding: var(--space-xl);
+      position: fixed;
+      width: 280px;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 100;
+    }
+    
+    .admin-brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-2xl);
+      padding-bottom: var(--space-lg);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .admin-logo {
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-2xl);
+    }
+    
+    .admin-menu {
+      list-style: none;
+    }
+    
+    .admin-menu-item {
+      margin-bottom: var(--space-sm);
+    }
+    
+    .admin-menu-link {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      color: rgba(255, 255, 255, 0.8);
+      border-radius: var(--radius-lg);
+      transition: all var(--transition-fast);
+      text-decoration: none;
+    }
+    
+    .admin-menu-link:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--white);
+    }
+    
+    .admin-menu-link.active {
+      background: rgba(255, 255, 255, 0.2);
+      color: var(--white);
+    }
+    
+    .admin-content {
+      margin-left: 280px;
+      padding: var(--space-2xl);
+    }
+    
+    .ai-header {
+      background: var(--gradient-tech);
+      color: var(--white);
+      padding: var(--space-2xl);
+      border-radius: var(--radius-xl);
+      margin-bottom: var(--space-xl);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .ai-header::before {
+      content: '🤖';
+      position: absolute;
+      right: -20px;
+      top: -20px;
+      font-size: 10rem;
+      opacity: 0.1;
+    }
+    
+    .insight-card {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      margin-bottom: var(--space-xl);
+      border-left: 4px solid var(--cool-teal);
+    }
+    
+    .insight-card.critical {
+      border-left-color: var(--error);
+    }
+    
+    .insight-card.warning {
+      border-left-color: var(--warning);
+    }
+    
+    .heatmap-container {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: var(--space-sm);
+      margin-top: var(--space-lg);
+    }
+    
+    .heatmap-cell {
+      aspect-ratio: 1;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-xs);
+      font-weight: var(--weight-bold);
+      cursor: pointer;
+      transition: all var(--transition-base);
+    }
+    
+    .heatmap-cell:hover {
+      transform: scale(1.1);
+      z-index: 10;
+    }
+    
+    .heat-low {
+      background: rgba(39, 174, 96, 0.2);
+      color: var(--success);
+    }
+    
+    .heat-medium {
+      background: rgba(243, 156, 18, 0.3);
+      color: var(--warning);
+    }
+    
+    .heat-high {
+      background: rgba(231, 76, 60, 0.4);
+      color: var(--error);
+    }
+    
+    .prediction-card {
+      background: var(--off-white);
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-md);
+      border-left: 4px solid var(--cool-teal);
+    }
+    
+    .confidence-bar {
+      height: 8px;
+      background: var(--light-gray);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin-top: var(--space-sm);
+    }
+    
+    .confidence-fill {
+      height: 100%;
+      background: var(--gradient-tech);
+      transition: width var(--transition-base);
+    }
+    
+    .recommendation-card {
+      background: var(--white);
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: var(--space-md);
+      display: flex;
+      gap: var(--space-md);
+      align-items: start;
+    }
+    
+    .recommendation-icon {
+      width: 50px;
+      height: 50px;
+      background: var(--gradient-primary);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-2xl);
+      flex-shrink: 0;
+    }
+    
+    @media (max-width: 1024px) {
+      .admin-layout {
+        grid-template-columns: 1fr;
+      }
+      
+      .admin-sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+      }
+      
+      .admin-content {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-brand">
+        <div class="admin-logo">⚡</div>
+        <div>
+          <div class="text-xl font-bold">TransiAI</div>
+          <div class="text-xs" style="opacity: 0.8;">Admin Portal</div>
+        </div>
+      </div>
+      
+      <ul class="admin-menu">
+        <li class="admin-menu-item">
+          <a href="index.html" class="admin-menu-link">
+            <span>📊</span>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="map-overview.html" class="admin-menu-link">
+            <span>🗺️</span>
+            <span>Live Map</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="queue-management.html" class="admin-menu-link">
+            <span>👥</span>
+            <span>Queue Management</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="dispatch.html" class="admin-menu-link">
+            <span>🚌</span>
+            <span>Dispatch</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="drivers.html" class="admin-menu-link">
+            <span>👨‍✈️</span>
+            <span>Drivers</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="analytics.html" class="admin-menu-link">
+            <span>📈</span>
+            <span>Analytics</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="ai-insights.html" class="admin-menu-link active">
+            <span>🤖</span>
+            <span>AI Insights</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="#" onclick="logout()" class="admin-menu-link">
+            <span>🚪</span>
+            <span>Logout</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="admin-content">
+      <!-- Header -->
+      <div class="ai-header">
+        <h1 class="text-4xl font-bold mb-sm">AI Command Center</h1>
+        <p class="text-lg" style="opacity: 0.9;">Predictive analytics and intelligent recommendations</p>
+      </div>
+      
+      <!-- Real-time Insights -->
+      <section class="mb-2xl">
+        <h2 class="text-2xl font-bold mb-lg">Real-Time Insights</h2>
+        
+        <div class="insight-card critical">
+          <div class="flex items-start gap-md">
+            <span style="font-size: 2rem;">⚠️</span>
+            <div style="flex: 1;">
+              <h3 class="text-xl font-bold mb-sm">High Demand Alert - Sandton</h3>
+              <p class="text-gray mb-md">AI predicts 40% increase in passenger demand in the next 2 hours. Recommend deploying 3 additional vehicles.</p>
+              <div class="flex gap-md">
+                <button class="btn btn-sm btn-primary" onclick="deployVehicles()">Deploy Vehicles</button>
+                <button class="btn btn-sm btn-outline" onclick="viewDetails()">View Details</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="insight-card warning">
+          <div class="flex items-start gap-md">
+            <span style="font-size: 2rem;">🚦</span>
+            <div style="flex: 1;">
+              <h3 class="text-xl font-bold mb-sm">Traffic Congestion Detected</h3>
+              <p class="text-gray mb-md">N1 Highway experiencing heavy traffic. Suggest rerouting 5 vehicles via M1 to save 15 minutes average.</p>
+              <div class="flex gap-md">
+                <button class="btn btn-sm btn-primary" onclick="applyReroute()">Apply Reroute</button>
+                <button class="btn btn-sm btn-outline" onclick="notifyDrivers()">Notify Drivers</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="insight-card">
+          <div class="flex items-start gap-md">
+            <span style="font-size: 2rem;">💡</span>
+            <div style="flex: 1;">
+              <h3 class="text-xl font-bold mb-sm">Optimization Opportunity</h3>
+              <p class="text-gray mb-md">Route efficiency can be improved by 12% by adjusting departure times for morning routes.</p>
+              <div class="flex gap-md">
+                <button class="btn btn-sm btn-outline" onclick="viewOptimization()">View Optimization</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Demand Heatmap -->
+      <div class="heatmap-container">
+        <h2 class="text-2xl font-bold mb-md">Passenger Demand Heatmap</h2>
+        <p class="text-gray mb-lg">Real-time demand across different areas (Next 2 hours)</p>
+        
+        <div class="heatmap-grid" id="heatmapGrid">
+          <!-- Heatmap cells will be generated here -->
+        </div>
+        
+        <div class="flex gap-md mt-lg justify-center">
+          <div class="flex items-center gap-sm">
+            <div class="heat-low" style="width: 20px; height: 20px; border-radius: 4px;"></div>
+            <span class="text-sm">Low Demand</span>
+          </div>
+          <div class="flex items-center gap-sm">
+            <div class="heat-medium" style="width: 20px; height: 20px; border-radius: 4px;"></div>
+            <span class="text-sm">Medium Demand</span>
+          </div>
+          <div class="flex items-center gap-sm">
+            <div class="heat-high" style="width: 20px; height: 20px; border-radius: 4px;"></div>
+            <span class="text-sm">High Demand</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Predictions -->
+      <section class="mb-2xl">
+        <h2 class="text-2xl font-bold mb-lg">AI Predictions</h2>
+        
+        <div class="grid md:grid-cols-2 gap-lg">
+          <div class="prediction-card">
+            <h3 class="font-bold mb-sm">Peak Hour Forecast</h3>
+            <p class="text-sm text-gray mb-md">Expected passenger volume: 18:00 - 19:00</p>
+            <div class="text-2xl font-bold text-primary mb-xs">4,567 passengers</div>
+            <div class="text-sm text-gray mb-sm">Confidence: 94%</div>
+            <div class="confidence-bar">
+              <div class="confidence-fill" style="width: 94%;"></div>
+            </div>
+          </div>
+          
+          <div class="prediction-card">
+            <h3 class="font-bold mb-sm">Revenue Projection</h3>
+            <p class="text-sm text-gray mb-md">Today's estimated total revenue</p>
+            <div class="text-2xl font-bold text-primary mb-xs">R 52,340</div>
+            <div class="text-sm text-gray mb-sm">Confidence: 89%</div>
+            <div class="confidence-bar">
+              <div class="confidence-fill" style="width: 89%;"></div>
+            </div>
+          </div>
+          
+          <div class="prediction-card">
+            <h3 class="font-bold mb-sm">Maintenance Alert</h3>
+            <p class="text-sm text-gray mb-md">Vehicles requiring service soon</p>
+            <div class="text-2xl font-bold text-warning mb-xs">7 vehicles</div>
+            <div class="text-sm text-gray mb-sm">Confidence: 96%</div>
+            <div class="confidence-bar">
+              <div class="confidence-fill" style="width: 96%;"></div>
+            </div>
+          </div>
+          
+          <div class="prediction-card">
+            <h3 class="font-bold mb-sm">Driver Availability</h3>
+            <p class="text-sm text-gray mb-md">Available drivers for evening shift</p>
+            <div class="text-2xl font-bold text-success mb-xs">45 drivers</div>
+            <div class="text-sm text-gray mb-sm">Confidence: 91%</div>
+            <div class="confidence-bar">
+              <div class="confidence-fill" style="width: 91%;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- AI Recommendations -->
+      <section>
+        <h2 class="text-2xl font-bold mb-lg">AI Recommendations</h2>
+        
+        <div class="recommendation-card">
+          <div class="recommendation-icon">🚌</div>
+          <div style="flex: 1;">
+            <h3 class="font-bold mb-sm">Add 2 Buses to JHB-Soweto Route</h3>
+            <p class="text-sm text-gray mb-md">High demand detected. Adding vehicles will reduce wait times by 35% and increase revenue by R 3,200.</p>
+            <div class="flex gap-md">
+              <button class="btn btn-sm btn-primary" onclick="implementRecommendation(1)">Implement</button>
+              <button class="btn btn-sm btn-ghost" onclick="dismissRecommendation(1)">Dismiss</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="recommendation-card">
+          <div class="recommendation-icon">⏰</div>
+          <div style="flex: 1;">
+            <h3 class="font-bold mb-sm">Extend Service Hours</h3>
+            <p class="text-sm text-gray mb-md">Late-night demand increasing. Extending service until 23:00 could capture additional R 5,600 daily revenue.</p>
+            <div class="flex gap-md">
+              <button class="btn btn-sm btn-primary" onclick="implementRecommendation(2)">Implement</button>
+              <button class="btn btn-sm btn-ghost" onclick="dismissRecommendation(2)">Dismiss</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="recommendation-card">
+          <div class="recommendation-icon">💰</div>
+          <div style="flex: 1;">
+            <h3 class="font-bold mb-sm">Dynamic Pricing Opportunity</h3>
+            <p class="text-sm text-gray mb-md">Implement surge pricing during peak hours (17:00-19:00) to optimize revenue by 18%.</p>
+            <div class="flex gap-md">
+              <button class="btn btn-sm btn-primary" onclick="implementRecommendation(3)">Implement</button>
+              <button class="btn btn-sm btn-ghost" onclick="dismissRecommendation(3)">Dismiss</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    // Check authentication
+    requireAuth(['admin']);
+    
+    // Initialize
+    function initializeAI() {
+      generateHeatmap();
+    }
+    
+    function generateHeatmap() {
+      const heatmapGrid = document.getElementById('heatmapGrid');
+      const areas = [
+        'JHB', 'SWT', 'SNT', 'PTA', 'MID', 'RND', 'RSB',
+        'BRM', 'YEO', 'BED', 'KEM', 'BEN', 'BKS', 'SPR',
+        'ALX', 'ORL', 'DIP', 'ROO', 'EDV', 'GER', 'BOK'
+      ];
+      
+      const heatLevels = ['low', 'low', 'medium', 'high', 'medium', 'low', 'medium',
+                          'high', 'medium', 'low', 'medium', 'high', 'medium', 'low',
+                          'medium', 'high', 'low', 'medium', 'low', 'high', 'medium'];
+      
+      heatmapGrid.innerHTML = areas.map((area, index) => `
+        <div class="heatmap-cell heat-${heatLevels[index]}" title="${area}">
+          ${area}
+        </div>
+      `).join('');
+    }
+    
+    function deployVehicles() {
+      showNotification('Deploying 3 additional vehicles to Sandton area...', 'success');
+    }
+    
+    function viewDetails() {
+      showNotification('Loading detailed analytics...', 'info');
+    }
+    
+    function applyReroute() {
+      showNotification('Applying optimized routes to affected vehicles...', 'success');
+    }
+    
+    function notifyDrivers() {
+      showNotification('Sending route updates to 5 drivers...', 'info');
+    }
+    
+    function viewOptimization() {
+      showNotification('Loading optimization details...', 'info');
+    }
+    
+    function implementRecommendation(id) {
+      showNotification(`Implementing AI recommendation #${id}...`, 'success');
+      setTimeout(() => {
+        showNotification('Recommendation implemented successfully!', 'success');
+      }, 2000);
+    }
+    
+    function dismissRecommendation(id) {
+      event.target.closest('.recommendation-card').style.animation = 'fadeOut 0.3s ease-out';
+      setTimeout(() => {
+        event.target.closest('.recommendation-card').remove();
+      }, 300);
+    }
+    
+    // Initialize
+    initializeAI();
+  </script>
+</body>
+</html>

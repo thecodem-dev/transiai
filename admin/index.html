@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - TransiAI</title>
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body {
+      background: var(--off-white);
+      margin: 0;
+      padding: 0;
+    }
+    
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+    
+    .admin-sidebar {
+      background: linear-gradient(180deg, var(--deep-indigo) 0%, var(--deep-brown) 100%);
+      color: var(--white);
+      padding: var(--space-xl);
+      position: fixed;
+      width: 280px;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 100;
+    }
+    
+    .admin-brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-2xl);
+      padding-bottom: var(--space-lg);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .admin-logo {
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-2xl);
+    }
+    
+    .admin-menu {
+      list-style: none;
+    }
+    
+    .admin-menu-item {
+      margin-bottom: var(--space-sm);
+    }
+    
+    .admin-menu-link {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      color: rgba(255, 255, 255, 0.8);
+      border-radius: var(--radius-lg);
+      transition: all var(--transition-fast);
+      text-decoration: none;
+    }
+    
+    .admin-menu-link:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--white);
+    }
+    
+    .admin-menu-link.active {
+      background: rgba(255, 255, 255, 0.2);
+      color: var(--white);
+    }
+    
+    .admin-content {
+      margin-left: 280px;
+      padding: var(--space-2xl);
+    }
+    
+    .admin-header {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--space-lg);
+      margin-bottom: var(--space-2xl);
+    }
+    
+    .stat-card {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100px;
+      height: 100px;
+      background: var(--gradient-primary);
+      opacity: 0.1;
+      border-radius: 50%;
+      transform: translate(30%, -30%);
+    }
+    
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      background: var(--gradient-primary);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-2xl);
+      margin-bottom: var(--space-md);
+    }
+    
+    .stat-value {
+      font-size: var(--text-4xl);
+      font-weight: var(--weight-bold);
+      color: var(--deep-brown);
+      margin-bottom: var(--space-xs);
+    }
+    
+    .stat-label {
+      color: var(--medium-gray);
+      font-size: var(--text-sm);
+      margin-bottom: var(--space-sm);
+    }
+    
+    .stat-change {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-size: var(--text-sm);
+      font-weight: var(--weight-semibold);
+    }
+    
+    .stat-change.positive {
+      color: var(--success);
+    }
+    
+    .stat-change.negative {
+      color: var(--error);
+    }
+    
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: var(--space-xl);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .dashboard-card {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .activity-item {
+      display: flex;
+      align-items: start;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+    
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--gradient-tech);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-lg);
+      flex-shrink: 0;
+    }
+    
+    .alert-item {
+      padding: var(--space-md);
+      background: rgba(243, 156, 18, 0.1);
+      border-left: 4px solid var(--warning);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-md);
+    }
+    
+    .alert-item.critical {
+      background: rgba(231, 76, 60, 0.1);
+      border-left-color: var(--error);
+    }
+    
+    @media (max-width: 1024px) {
+      .admin-layout {
+        grid-template-columns: 1fr;
+      }
+      
+      .admin-sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+      }
+      
+      .admin-content {
+        margin-left: 0;
+      }
+      
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-brand">
+        <div class="admin-logo">⚡</div>
+        <div>
+          <div class="text-xl font-bold">TransiAI</div>
+          <div class="text-xs" style="opacity: 0.8;">Admin Portal</div>
+        </div>
+      </div>
+      
+      <ul class="admin-menu">
+        <li class="admin-menu-item">
+          <a href="index.html" class="admin-menu-link active">
+            <span>📊</span>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="map-overview.html" class="admin-menu-link">
+            <span>🗺️</span>
+            <span>Live Map</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="queue-management.html" class="admin-menu-link">
+            <span>👥</span>
+            <span>Queue Management</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="dispatch.html" class="admin-menu-link">
+            <span>🚌</span>
+            <span>Dispatch</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="drivers.html" class="admin-menu-link">
+            <span>👨‍✈️</span>
+            <span>Drivers</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="analytics.html" class="admin-menu-link">
+            <span>📈</span>
+            <span>Analytics</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="ai-insights.html" class="admin-menu-link">
+            <span>🤖</span>
+            <span>AI Insights</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="#" onclick="logout()" class="admin-menu-link">
+            <span>🚪</span>
+            <span>Logout</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="admin-content">
+      <!-- Header -->
+      <div class="admin-header">
+        <div class="flex justify-between items-center">
+          <div>
+            <h1 class="text-3xl font-bold mb-sm">System Overview</h1>
+            <p class="text-gray">Real-time monitoring and management</p>
+          </div>
+          <div class="flex gap-md">
+            <button class="btn btn-outline" onclick="refreshDashboard()">
+              🔄 Refresh
+            </button>
+            <button class="btn btn-primary" onclick="generateReport()">
+              📄 Generate Report
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Statistics -->
+      <div class="stats-grid">
+        <div class="stat-card stagger-item">
+          <div class="stat-icon">🚌</div>
+          <div class="stat-value" id="activeVehicles">0</div>
+          <div class="stat-label">Active Vehicles</div>
+          <div class="stat-change positive">↑ 12% from yesterday</div>
+        </div>
+        
+        <div class="stat-card stagger-item">
+          <div class="stat-icon">👥</div>
+          <div class="stat-value" id="activePassengers">0</div>
+          <div class="stat-label">Active Passengers</div>
+          <div class="stat-change positive">↑ 8% from yesterday</div>
+        </div>
+        
+        <div class="stat-card stagger-item">
+          <div class="stat-icon">💰</div>
+          <div class="stat-value" id="todayRevenue">R 0</div>
+          <div class="stat-label">Today's Revenue</div>
+          <div class="stat-change positive">↑ 15% from yesterday</div>
+        </div>
+        
+        <div class="stat-card stagger-item">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-value" id="avgRating">0.0</div>
+          <div class="stat-label">Average Rating</div>
+          <div class="stat-change positive">↑ 0.2 from last week</div>
+        </div>
+      </div>
+      
+      <!-- Dashboard Grid -->
+      <div class="dashboard-grid">
+        <!-- Recent Activity -->
+        <div class="dashboard-card">
+          <h2 class="text-xl font-bold mb-lg">Recent Activity</h2>
+          <div id="recentActivity">
+            <!-- Activity items will be loaded here -->
+          </div>
+        </div>
+        
+        <!-- System Alerts -->
+        <div class="dashboard-card">
+          <h2 class="text-xl font-bold mb-lg">System Alerts</h2>
+          <div id="systemAlerts">
+            <!-- Alerts will be loaded here -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Quick Actions -->
+      <div class="dashboard-card">
+        <h2 class="text-xl font-bold mb-lg">Quick Actions</h2>
+        <div class="grid md:grid-cols-4 gap-md">
+          <button class="btn btn-outline btn-full" onclick="addVehicle()">
+            ➕ Add Vehicle
+          </button>
+          <button class="btn btn-outline btn-full" onclick="addDriver()">
+            👨‍✈️ Add Driver
+          </button>
+          <button class="btn btn-outline btn-full" onclick="createRoute()">
+            🗺️ Create Route
+          </button>
+          <button class="btn btn-outline btn-full" onclick="viewReports()">
+            📊 View Reports
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    // Check authentication
+    requireAuth(['admin']);
+    
+    // Initialize dashboard
+    function initializeDashboard() {
+      loadStats();
+      loadRecentActivity();
+      loadSystemAlerts();
+      
+      // Auto-refresh every 30 seconds
+      setInterval(refreshDashboard, 30000);
+    }
+    
+    function loadStats() {
+      const stats = {
+        activeVehicles: 127,
+        activePassengers: 3456,
+        todayRevenue: 45678.50,
+        avgRating: 4.7
+      };
+      
+      document.getElementById('activeVehicles').textContent = stats.activeVehicles;
+      document.getElementById('activePassengers').textContent = stats.activePassengers.toLocaleString();
+      document.getElementById('todayRevenue').textContent = formatCurrency(stats.todayRevenue);
+      document.getElementById('avgRating').textContent = stats.avgRating.toFixed(1);
+    }
+    
+    function loadRecentActivity() {
+      const activities = [
+        { icon: '🚌', text: 'Vehicle CA 123 456 started route', time: '2 min ago', type: 'vehicle' },
+        { icon: '👤', text: 'New driver registered: John Doe', time: '5 min ago', type: 'driver' },
+        { icon: '🎫', text: '156 tickets sold in last hour', time: '10 min ago', type: 'ticket' },
+        { icon: '⚠️', text: 'Traffic incident reported on N1', time: '15 min ago', type: 'alert' },
+        { icon: '💰', text: 'Payout processed: R 12,500', time: '20 min ago', type: 'payment' },
+        { icon: '📊', text: 'Daily report generated', time: '1 hour ago', type: 'report' }
+      ];
+      
+      const activityContainer = document.getElementById('recentActivity');
+      activityContainer.innerHTML = activities.map(activity => `
+        <div class="activity-item">
+          <div class="activity-icon">${activity.icon}</div>
+          <div style="flex: 1;">
+            <div class="font-semibold">${activity.text}</div>
+            <div class="text-sm text-gray">${activity.time}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function loadSystemAlerts() {
+      const alerts = [
+        { text: 'High demand detected in Sandton area', severity: 'warning', time: '5 min ago' },
+        { text: 'Vehicle CA 789 012 requires maintenance', severity: 'critical', time: '10 min ago' },
+        { text: 'Queue capacity at 85% - Park Station', severity: 'warning', time: '15 min ago' }
+      ];
+      
+      const alertsContainer = document.getElementById('systemAlerts');
+      alertsContainer.innerHTML = alerts.map(alert => `
+        <div class="alert-item ${alert.severity}">
+          <div class="font-semibold mb-xs">${alert.text}</div>
+          <div class="text-xs text-gray">${alert.time}</div>
+        </div>
+      `).join('');
+    }
+    
+    function refreshDashboard() {
+      showNotification('Refreshing dashboard...', 'info');
+      setTimeout(() => {
+        loadStats();
+        loadRecentActivity();
+        loadSystemAlerts();
+        showNotification('Dashboard updated!', 'success');
+      }, 1000);
+    }
+    
+    function generateReport() {
+      showNotification('Generating system report...', 'info');
+      setTimeout(() => {
+        showNotification('Report generated successfully!', 'success');
+      }, 2000);
+    }
+    
+    function addVehicle() {
+      window.location.href = 'dispatch.html';
+    }
+    
+    function addDriver() {
+      window.location.href = 'drivers.html';
+    }
+    
+    function createRoute() {
+      window.location.href = 'dispatch.html';
+    }
+    
+    function viewReports() {
+      window.location.href = 'analytics.html';
+    }
+    
+    // Initialize
+    initializeDashboard();
+  </script>
+</body>
+</html>

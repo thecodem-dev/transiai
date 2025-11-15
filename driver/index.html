@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Driver Dashboard - TransiAI</title>
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body {
+      background: var(--off-white);
+    }
+    
+    .dashboard-container {
+      padding-top: 80px;
+      min-height: 100vh;
+    }
+    
+    .dashboard-header {
+      background: var(--gradient-tech);
+      color: var(--white);
+      padding: var(--space-2xl) 0;
+      margin-bottom: var(--space-xl);
+    }
+    
+    .driver-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-lg);
+    }
+    
+    .status-toggle {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+    
+    .status-indicator {
+      width: 60px;
+      height: 34px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: var(--radius-full);
+      position: relative;
+      cursor: pointer;
+      transition: background var(--transition-base);
+    }
+    
+    .status-indicator.active {
+      background: var(--success);
+    }
+    
+    .status-indicator::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 28px;
+      height: 28px;
+      background: var(--white);
+      border-radius: 50%;
+      transition: transform var(--transition-base);
+    }
+    
+    .status-indicator.active::after {
+      transform: translateX(26px);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-lg);
+      margin-bottom: var(--space-2xl);
+    }
+    
+    .stat-card {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      background: var(--gradient-tech);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-2xl);
+      margin-bottom: var(--space-md);
+    }
+    
+    .stat-value {
+      font-size: var(--text-3xl);
+      font-weight: var(--weight-bold);
+      color: var(--deep-brown);
+      margin-bottom: var(--space-xs);
+    }
+    
+    .stat-label {
+      color: var(--medium-gray);
+      font-size: var(--text-sm);
+    }
+    
+    .route-card {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .route-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: var(--space-lg);
+      flex-wrap: wrap;
+      gap: var(--space-md);
+    }
+    
+    .passenger-list {
+      display: grid;
+      gap: var(--space-md);
+      margin-top: var(--space-lg);
+    }
+    
+    .passenger-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-md);
+      background: var(--off-white);
+      border-radius: var(--radius-lg);
+      transition: all var(--transition-base);
+    }
+    
+    .passenger-item:hover {
+      background: rgba(27, 163, 156, 0.1);
+      transform: translateX(4px);
+    }
+    
+    .passenger-info {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+    
+    .alert-card {
+      background: var(--white);
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      border-left: 4px solid var(--warning);
+      margin-bottom: var(--space-md);
+    }
+    
+    @media (max-width: 768px) {
+      .driver-status {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-brand">
+        <div class="navbar-logo">T</div>
+        <span>TransiAI Driver</span>
+      </a>
+      
+      <button class="navbar-toggle" onclick="toggleMobileMenu()">☰</button>
+      
+      <ul class="navbar-menu">
+        <li><a href="index.html" class="navbar-link active">Dashboard</a></li>
+        <li><a href="routes.html" class="navbar-link">My Routes</a></li>
+        <li><a href="pickups.html" class="navbar-link">Pickups</a></li>
+        <li><a href="earnings.html" class="navbar-link">Earnings</a></li>
+        <li><a href="incidents.html" class="navbar-link">Incidents</a></li>
+        <li><a href="#" onclick="logout()" class="navbar-link">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="dashboard-container">
+    <!-- Header Section -->
+    <div class="dashboard-header">
+      <div class="container">
+        <div class="driver-status">
+          <div>
+            <h1 class="text-4xl font-bold mb-sm" id="welcomeText">Welcome back, Driver!</h1>
+            <p class="text-lg" style="opacity: 0.9;">Vehicle: <span id="vehicleInfo">Toyota Quantum - CA 123 456</span></p>
+          </div>
+          <div class="status-toggle">
+            <div>
+              <div class="text-sm mb-xs" style="opacity: 0.9;">Status</div>
+              <div class="font-bold" id="statusText">Offline</div>
+            </div>
+            <div class="status-indicator" id="statusToggle" onclick="toggleDriverStatus()"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Statistics -->
+      <div class="stats-grid">
+        <div class="stat-card stagger-item">
+          <div class="stat-icon">🚌</div>
+          <div class="stat-value" id="tripsToday">0</div>
+          <div class="stat-label">Trips Today</div>
+        </div>
+        
+        <div class="stat-card stagger-item">
+          <div class="stat-icon">👥</div>
+          <div class="stat-value" id="passengersToday">0</div>
+          <div class="stat-label">Passengers Today</div>
+        </div>
+        
+        <div class="stat-card stagger-item">
+          <div class="stat-icon">💰</div>
+          <div class="stat-value" id="earningsToday">R 0</div>
+          <div class="stat-label">Earnings Today</div>
+        </div>
+        
+        <div class="stat-card stagger-item">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-value" id="rating">4.8</div>
+          <div class="stat-label">Your Rating</div>
+        </div>
+      </div>
+
+      <!-- AI Suggestions -->
+      <div id="aiSuggestions" style="display: none;">
+        <h2 class="text-2xl font-bold mb-lg">AI Suggestions</h2>
+        <div class="alert-card">
+          <div class="flex items-start gap-md">
+            <span style="font-size: 1.5rem;">🤖</span>
+            <div style="flex: 1;">
+              <h3 class="font-bold mb-xs">Route Optimization Available</h3>
+              <p class="text-sm text-gray mb-md">Traffic detected on N1 Highway. Alternative route via M1 will save 15 minutes.</p>
+              <button class="btn btn-sm btn-primary" onclick="acceptSuggestion()">Accept Suggestion</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Route -->
+      <section class="route-card" id="currentRoute" style="display: none;">
+        <div class="route-header">
+          <div>
+            <h2 class="text-2xl font-bold mb-sm">Current Route</h2>
+            <p class="text-lg text-gray" id="routeName">Johannesburg CBD to Soweto</p>
+          </div>
+          <div class="flex gap-md">
+            <button class="btn btn-outline" onclick="viewRouteMap()">
+              📍 View Map
+            </button>
+            <button class="btn btn-primary" onclick="startTrip()">
+              ▶️ Start Trip
+            </button>
+          </div>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-lg mb-lg">
+          <div class="card card-flat text-center">
+            <div class="text-sm text-gray mb-xs">Distance</div>
+            <div class="text-xl font-bold">15 km</div>
+          </div>
+          <div class="card card-flat text-center">
+            <div class="text-sm text-gray mb-xs">Duration</div>
+            <div class="text-xl font-bold">25 min</div>
+          </div>
+          <div class="card card-flat text-center">
+            <div class="text-sm text-gray mb-xs">Passengers</div>
+            <div class="text-xl font-bold" id="passengerCount">28/35</div>
+          </div>
+        </div>
+        
+        <h3 class="text-lg font-bold mb-md">Waiting Passengers (Queue)</h3>
+        <div class="passenger-list" id="passengerList">
+          <!-- Passengers will be loaded here -->
+        </div>
+      </section>
+
+      <!-- Quick Actions -->
+      <section>
+        <h2 class="text-2xl font-bold mb-lg">Quick Actions</h2>
+        <div class="grid md:grid-cols-3 gap-lg">
+          <a href="routes.html" class="card hover-lift" style="text-decoration: none; color: inherit;">
+            <div style="font-size: 2rem; margin-bottom: var(--space-md);">🗺️</div>
+            <h3 class="text-lg font-bold mb-sm">View Routes</h3>
+            <p class="text-sm text-gray">See your assigned routes</p>
+          </a>
+          
+          <a href="pickups.html" class="card hover-lift" style="text-decoration: none; color: inherit;">
+            <div style="font-size: 2rem; margin-bottom: var(--space-md);">📋</div>
+            <h3 class="text-lg font-bold mb-sm">Pickup List</h3>
+            <p class="text-sm text-gray">View passengers to pick up</p>
+          </a>
+          
+          <a href="incidents.html" class="card hover-lift" style="text-decoration: none; color: inherit;">
+            <div style="font-size: 2rem; margin-bottom: var(--space-md);">⚠️</div>
+            <h3 class="text-lg font-bold mb-sm">Report Issue</h3>
+            <p class="text-sm text-gray">Report incidents or problems</p>
+          </a>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    // Check authentication
+    requireAuth(['driver']);
+    
+    const user = getCurrentUser();
+    let isOnline = false;
+    
+    // Initialize dashboard
+    function initializeDashboard() {
+      document.getElementById('welcomeText').textContent = `Welcome back, ${user.name.split(' ')[0]}!`;
+      document.getElementById('vehicleInfo').textContent = user.vehicle || 'Toyota Quantum - CA 123 456';
+      
+      // Load today's stats
+      loadStats();
+    }
+    
+    function loadStats() {
+      // Mock data for today
+      const stats = {
+        trips: 12,
+        passengers: 156,
+        earnings: 1250.00,
+        rating: 4.8
+      };
+      
+      document.getElementById('tripsToday').textContent = stats.trips;
+      document.getElementById('passengersToday').textContent = stats.passengers;
+      document.getElementById('earningsToday').textContent = formatCurrency(stats.earnings);
+      document.getElementById('rating').textContent = stats.rating;
+    }
+    
+    function toggleDriverStatus() {
+      const toggle = document.getElementById('statusToggle');
+      const statusText = document.getElementById('statusText');
+      const currentRoute = document.getElementById('currentRoute');
+      const aiSuggestions = document.getElementById('aiSuggestions');
+      
+      isOnline = !isOnline;
+      
+      if (isOnline) {
+        toggle.classList.add('active');
+        statusText.textContent = 'Online';
+        statusText.style.color = 'var(--success)';
+        currentRoute.style.display = 'block';
+        aiSuggestions.style.display = 'block';
+        loadPassengers();
+        showNotification('You are now online and ready to drive!', 'success');
+      } else {
+        toggle.classList.remove('active');
+        statusText.textContent = 'Offline';
+        statusText.style.color = 'inherit';
+        currentRoute.style.display = 'none';
+        aiSuggestions.style.display = 'none';
+        showNotification('You are now offline', 'info');
+      }
+    }
+    
+    function loadPassengers() {
+      const passengerList = document.getElementById('passengerList');
+      
+      const passengers = [
+        { queue: 'A-045', name: 'Thabo M.', pickup: 'Park Station', status: 'waiting' },
+        { queue: 'A-046', name: 'Sipho K.', pickup: 'Park Station', status: 'waiting' },
+        { queue: 'A-047', name: 'Zanele N.', pickup: 'Braamfontein', status: 'waiting' },
+        { queue: 'A-048', name: 'Nomsa D.', pickup: 'Braamfontein', status: 'waiting' }
+      ];
+      
+      passengerList.innerHTML = passengers.map(p => `
+        <div class="passenger-item">
+          <div class="passenger-info">
+            <div class="avatar avatar-sm">${p.name.split(' ')[0][0]}${p.name.split(' ')[1][0]}</div>
+            <div>
+              <div class="font-semibold">${p.name}</div>
+              <div class="text-sm text-gray">Queue: ${p.queue} • ${p.pickup}</div>
+            </div>
+          </div>
+          <div class="flex gap-sm">
+            <button class="btn btn-sm btn-outline" onclick="callPassenger('${p.queue}')">📞</button>
+            <button class="btn btn-sm btn-primary" onclick="confirmPickup('${p.queue}')">✓</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function viewRouteMap() {
+      showNotification('Opening route map...', 'info');
+      setTimeout(() => {
+        window.location.href = 'routes.html';
+      }, 1000);
+    }
+    
+    function startTrip() {
+      showModal(
+        'Start Trip',
+        `
+          <div class="text-center mb-lg">
+            <div style="font-size: 3rem; margin-bottom: var(--space-md);">🚌</div>
+            <p>Are you ready to start this trip?</p>
+            <p class="text-sm text-gray mt-md">Make sure all passengers are on board.</p>
+          </div>
+        `,
+        [
+          { label: 'Cancel', class: 'btn-ghost', onclick: 'closeModal()' },
+          { label: 'Start Trip', class: 'btn-primary', onclick: 'confirmStartTrip()' }
+        ]
+      );
+    }
+    
+    function confirmStartTrip() {
+      closeModal();
+      showNotification('Trip started! Safe travels!', 'success');
+      
+      // Simulate trip progress
+      setTimeout(() => {
+        showNotification('Next stop: Braamfontein in 5 minutes', 'info');
+      }, 3000);
+    }
+    
+    function callPassenger(queueNumber) {
+      showNotification(`Calling passenger ${queueNumber}...`, 'info');
+    }
+    
+    function confirmPickup(queueNumber) {
+      showNotification(`Passenger ${queueNumber} picked up successfully!`, 'success');
+      // Remove from list
+      event.target.closest('.passenger-item').style.animation = 'fadeOut 0.3s ease-out';
+      setTimeout(() => {
+        event.target.closest('.passenger-item').remove();
+        
+        // Update passenger count
+        const currentCount = parseInt(document.getElementById('passengerCount').textContent.split('/')[0]);
+        document.getElementById('passengerCount').textContent = `${currentCount + 1}/35`;
+      }, 300);
+    }
+    
+    function acceptSuggestion() {
+      showNotification('Route updated! Following optimized path.', 'success');
+      document.getElementById('aiSuggestions').style.display = 'none';
+    }
+    
+    // Initialize
+    initializeDashboard();
+  </script>
+</body>
+</html>

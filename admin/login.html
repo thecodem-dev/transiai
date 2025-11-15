@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - TransiAI</title>
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    .auth-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--deep-indigo) 0%, var(--deep-brown) 100%);
+      padding: var(--space-xl);
+    }
+    
+    .auth-card {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+      max-width: 450px;
+      width: 100%;
+      padding: var(--space-2xl);
+      animation: scaleIn 0.4s ease-out;
+    }
+    
+    .auth-header {
+      text-align: center;
+      margin-bottom: var(--space-2xl);
+    }
+    
+    .auth-logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto var(--space-lg);
+      background: linear-gradient(135deg, var(--deep-indigo) 0%, var(--deep-brown) 100%);
+      border-radius: var(--radius-xl);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-4xl);
+      color: var(--white);
+      font-weight: var(--weight-bold);
+    }
+    
+    .auth-title {
+      font-size: var(--text-3xl);
+      font-weight: var(--weight-bold);
+      color: var(--deep-brown);
+      margin-bottom: var(--space-sm);
+    }
+    
+    .auth-subtitle {
+      color: var(--medium-gray);
+      font-size: var(--text-base);
+    }
+    
+    .demo-credentials {
+      background: rgba(36, 49, 94, 0.1);
+      border-left: 4px solid var(--deep-indigo);
+      padding: var(--space-md);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-lg);
+      font-size: var(--text-sm);
+    }
+    
+    .demo-credentials strong {
+      color: var(--deep-indigo);
+    }
+    
+    .security-notice {
+      background: rgba(231, 76, 60, 0.1);
+      border-left: 4px solid var(--error);
+      padding: var(--space-md);
+      border-radius: var(--radius-md);
+      margin-top: var(--space-lg);
+      font-size: var(--text-sm);
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-logo">⚡</div>
+        <h1 class="auth-title">Admin Portal</h1>
+        <p class="auth-subtitle">System Administration Access</p>
+      </div>
+      
+      <!-- Demo Credentials Info -->
+      <div class="demo-credentials">
+        <strong>Demo Admin Account:</strong><br>
+        Email: admin@transiai.com<br>
+        Password: admin123
+      </div>
+      
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address</label>
+          <input 
+            type="email" 
+            id="email" 
+            class="form-input" 
+            placeholder="Enter admin email"
+            value="admin@transiai.com"
+            required
+          >
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            class="form-input" 
+            placeholder="Enter admin password"
+            value="admin123"
+            required
+          >
+        </div>
+        
+        <div class="form-group">
+          <label style="display: flex; align-items: center; gap: var(--space-sm); cursor: pointer;">
+            <input type="checkbox" id="remember">
+            <span class="text-sm">Keep me signed in</span>
+          </label>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-full btn-lg" style="background: linear-gradient(135deg, var(--deep-indigo) 0%, var(--deep-brown) 100%);">
+          Access Admin Portal
+        </button>
+      </form>
+      
+      <div class="security-notice">
+        <strong>⚠️ Security Notice:</strong> This portal is for authorized administrators only. All access is logged and monitored.
+      </div>
+      
+      <div class="text-center mt-lg">
+        <a href="../index.html" class="text-sm text-gray">← Back to home</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    function handleLogin(event) {
+      event.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      // Show loading state
+      const submitBtn = event.target.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<div class="spinner spinner-sm" style="margin: 0 auto;"></div>';
+      submitBtn.disabled = true;
+      
+      // Simulate API call
+      setTimeout(() => {
+        const result = login(email, password);
+        
+        if (result.success) {
+          if (result.user.role === 'admin') {
+            showNotification('Admin access granted! Loading dashboard...', 'success');
+            setTimeout(() => {
+              window.location.href = 'index.html';
+            }, 1000);
+          } else {
+            showNotification('Access denied. Admin credentials required.', 'error');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+          }
+        } else {
+          showNotification(result.message, 'error');
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+        }
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

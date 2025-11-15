@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Queue Management - TransiAI Admin</title>
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body {
+      background: var(--off-white);
+      margin: 0;
+      padding: 0;
+    }
+    
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+    
+    .admin-sidebar {
+      background: linear-gradient(180deg, var(--deep-indigo) 0%, var(--deep-brown) 100%);
+      color: var(--white);
+      padding: var(--space-xl);
+      position: fixed;
+      width: 280px;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 100;
+    }
+    
+    .admin-brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-2xl);
+      padding-bottom: var(--space-lg);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .admin-logo {
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-2xl);
+    }
+    
+    .admin-menu {
+      list-style: none;
+    }
+    
+    .admin-menu-item {
+      margin-bottom: var(--space-sm);
+    }
+    
+    .admin-menu-link {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      color: rgba(255, 255, 255, 0.8);
+      border-radius: var(--radius-lg);
+      transition: all var(--transition-fast);
+      text-decoration: none;
+    }
+    
+    .admin-menu-link:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--white);
+    }
+    
+    .admin-menu-link.active {
+      background: rgba(255, 255, 255, 0.2);
+      color: var(--white);
+    }
+    
+    .admin-content {
+      margin-left: 280px;
+      padding: var(--space-2xl);
+    }
+    
+    .queue-card {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .queue-item {
+      padding: var(--space-lg);
+      background: var(--off-white);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-md);
+      border-left: 4px solid var(--cool-teal);
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-brand">
+        <div class="admin-logo">⚡</div>
+        <div>
+          <div class="text-xl font-bold">TransiAI</div>
+          <div class="text-xs" style="opacity: 0.8;">Admin Portal</div>
+        </div>
+      </div>
+      
+      <ul class="admin-menu">
+        <li class="admin-menu-item">
+          <a href="index.html" class="admin-menu-link">
+            <span>📊</span>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="map-overview.html" class="admin-menu-link">
+            <span>🗺️</span>
+            <span>Live Map</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="queue-management.html" class="admin-menu-link active">
+            <span>👥</span>
+            <span>Queue Management</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="dispatch.html" class="admin-menu-link">
+            <span>🚌</span>
+            <span>Dispatch</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="drivers.html" class="admin-menu-link">
+            <span>👨‍✈️</span>
+            <span>Drivers</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="analytics.html" class="admin-menu-link">
+            <span>📈</span>
+            <span>Analytics</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="ai-insights.html" class="admin-menu-link">
+            <span>🤖</span>
+            <span>AI Insights</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="#" onclick="logout()" class="admin-menu-link">
+            <span>🚪</span>
+            <span>Logout</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="admin-content">
+      <h1 class="text-3xl font-bold mb-xl">Queue Management</h1>
+      
+      <div class="queue-card">
+        <h2 class="text-2xl font-bold mb-lg">Active Queues</h2>
+        <div class="queue-item">
+          <h3 class="font-bold mb-sm">Park Station - Queue A</h3>
+          <p class="text-gray">45 passengers waiting</p>
+        </div>
+        <div class="queue-item">
+          <h3 class="font-bold mb-sm">Sandton - Queue B</h3>
+          <p class="text-gray">32 passengers waiting</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    requireAuth(['admin']);
+  </script>
+</body>
+</html>

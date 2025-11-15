@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Queue - TransiAI Passenger</title>
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body {
+      background: var(--off-white);
+    }
+    
+    .queue-container {
+      padding-top: 80px;
+      min-height: 100vh;
+      padding-bottom: var(--space-2xl);
+    }
+    
+    .queue-header {
+      background: var(--gradient-tech);
+      color: var(--white);
+      padding: var(--space-2xl) 0;
+      margin-bottom: var(--space-xl);
+      text-align: center;
+    }
+    
+    .queue-number-display {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      padding: var(--space-3xl);
+      text-align: center;
+      box-shadow: var(--shadow-xl);
+      margin-bottom: var(--space-2xl);
+      animation: scaleIn 0.5s ease-out;
+    }
+    
+    .queue-number {
+      font-size: 6rem;
+      font-weight: var(--weight-bold);
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: var(--space-lg) 0;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-md) var(--space-xl);
+      background: rgba(27, 163, 156, 0.1);
+      border-radius: var(--radius-full);
+      font-weight: var(--weight-semibold);
+      color: var(--cool-teal);
+      font-size: var(--text-lg);
+    }
+    
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      background: var(--cool-teal);
+      border-radius: 50%;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    
+    .eta-display {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-lg);
+      margin-bottom: var(--space-2xl);
+    }
+    
+    .eta-card {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-lg);
+      text-align: center;
+      box-shadow: var(--shadow-md);
+    }
+    
+    .eta-value {
+      font-size: var(--text-4xl);
+      font-weight: var(--weight-bold);
+      color: var(--clay-orange);
+      margin: var(--space-sm) 0;
+    }
+    
+    .eta-label {
+      color: var(--medium-gray);
+      font-size: var(--text-sm);
+    }
+    
+    .progress-section {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      margin-bottom: var(--space-2xl);
+    }
+    
+    .queue-progress {
+      margin-top: var(--space-lg);
+    }
+    
+    .progress-step {
+      display: flex;
+      align-items: center;
+      gap: var(--space-lg);
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-md);
+      transition: all var(--transition-base);
+    }
+    
+    .progress-step.active {
+      background: rgba(204, 90, 26, 0.1);
+    }
+    
+    .progress-step.completed {
+      background: rgba(39, 174, 96, 0.1);
+    }
+    
+    .step-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-2xl);
+      background: var(--light-gray);
+      flex-shrink: 0;
+    }
+    
+    .progress-step.active .step-icon {
+      background: var(--gradient-primary);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .progress-step.completed .step-icon {
+      background: var(--success);
+    }
+    
+    .qr-section {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      text-align: center;
+    }
+    
+    .qr-code {
+      width: 200px;
+      height: 200px;
+      margin: var(--space-xl) auto;
+      background: var(--white);
+      border: 4px solid var(--clay-orange);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-sm);
+      color: var(--medium-gray);
+    }
+    
+    @media (max-width: 768px) {
+      .queue-number {
+        font-size: 4rem;
+      }
+      
+      .eta-display {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-brand">
+        <div class="navbar-logo">T</div>
+        <span>TransiAI</span>
+      </a>
+      
+      <button class="navbar-toggle" onclick="toggleMobileMenu()">☰</button>
+      
+      <ul class="navbar-menu">
+        <li><a href="index.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="map.html" class="navbar-link">Live Map</a></li>
+        <li><a href="queue.html" class="navbar-link active">My Queue</a></li>
+        <li><a href="history.html" class="navbar-link">History</a></li>
+        <li><a href="profile.html" class="navbar-link">Profile</a></li>
+        <li><a href="#" onclick="logout()" class="navbar-link">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="queue-container">
+    <!-- Header -->
+    <div class="queue-header">
+      <div class="container">
+        <h1 class="text-4xl font-bold mb-sm">Your Digital Queue</h1>
+        <p class="text-lg" style="opacity: 0.9;">No physical queues. Wait comfortably until it's your turn.</p>
+      </div>
+    </div>
+
+    <div class="container" style="max-width: 900px;">
+      <!-- Queue Number Display -->
+      <div class="queue-number-display">
+        <div class="status-indicator">
+          <div class="status-dot"></div>
+          <span id="queueStatus">In Queue</span>
+        </div>
+        
+        <div class="queue-number" id="queueNumber">A-045</div>
+        
+        <h2 class="text-2xl font-bold mb-sm" id="routeName">Johannesburg CBD to Soweto</h2>
+        <p class="text-gray" id="routeDetails">Bus • 15 km • 25 min journey</p>
+      </div>
+
+      <!-- ETA Display -->
+      <div class="eta-display">
+        <div class="eta-card stagger-item">
+          <div class="eta-label">Estimated Wait</div>
+          <div class="eta-value" id="waitTime">8</div>
+          <div class="eta-label">minutes</div>
+        </div>
+        
+        <div class="eta-card stagger-item">
+          <div class="eta-label">People Ahead</div>
+          <div class="eta-value" id="peopleAhead">12</div>
+          <div class="eta-label">passengers</div>
+        </div>
+        
+        <div class="eta-card stagger-item">
+          <div class="eta-label">Next Bus</div>
+          <div class="eta-value" id="nextBus">5</div>
+          <div class="eta-label">minutes</div>
+        </div>
+      </div>
+
+      <!-- Progress Section -->
+      <div class="progress-section">
+        <h3 class="text-xl font-bold mb-md">Queue Progress</h3>
+        <p class="text-gray mb-lg">Track your position in real-time</p>
+        
+        <div class="queue-progress" id="queueProgress">
+          <!-- Progress steps will be loaded here -->
+        </div>
+      </div>
+
+      <!-- QR Code Section -->
+      <div class="qr-section">
+        <h3 class="text-xl font-bold mb-md">Your Boarding Pass</h3>
+        <p class="text-gray mb-lg">Show this QR code to the driver when boarding</p>
+        
+        <div class="qr-code" id="qrCode">
+          <span>QR Code will appear when boarding</span>
+        </div>
+        
+        <div class="alert alert-info">
+          <strong>Tip:</strong> Keep this page open and your phone charged. You'll receive a notification when it's your turn to board.
+        </div>
+        
+        <div class="flex gap-md justify-center mt-xl">
+          <button class="btn btn-outline" onclick="refreshQueue()">
+            🔄 Refresh Status
+          </button>
+          <button class="btn btn-primary" onclick="generateTicket()">
+            🎫 Generate Ticket
+          </button>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-md justify-center mt-xl">
+        <button class="btn btn-ghost" onclick="cancelQueue()">
+          Cancel Queue
+        </button>
+        <button class="btn btn-secondary" onclick="contactSupport()">
+          Need Help?
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    // Check authentication
+    requireAuth(['passenger']);
+    
+    let queueData = {
+      number: 'A-045',
+      route: 'Johannesburg CBD to Soweto',
+      routeDetails: 'Bus • 15 km • 25 min journey',
+      waitTime: 8,
+      peopleAhead: 12,
+      nextBus: 5,
+      status: 'waiting',
+      position: 3
+    };
+    
+    // Initialize queue
+    function initializeQueue() {
+      // Check if coming from map with vehicle selection
+      const urlParams = new URLSearchParams(window.location.search);
+      const vehicleId = urlParams.get('vehicle');
+      
+      if (vehicleId) {
+        const vehicle = TransiAI.vehicles.find(v => v.id == vehicleId);
+        if (vehicle) {
+          queueData.route = vehicle.route;
+          queueData.routeDetails = `${vehicle.type} • ${vehicle.registration}`;
+          document.getElementById('routeName').textContent = vehicle.route;
+          document.getElementById('routeDetails').textContent = queueData.routeDetails;
+        }
+      }
+      
+      updateQueueDisplay();
+      loadQueueProgress();
+      startQueueSimulation();
+    }
+    
+    function updateQueueDisplay() {
+      document.getElementById('queueNumber').textContent = queueData.number;
+      document.getElementById('waitTime').textContent = queueData.waitTime;
+      document.getElementById('peopleAhead').textContent = queueData.peopleAhead;
+      document.getElementById('nextBus').textContent = queueData.nextBus;
+      
+      // Update status
+      const statusEl = document.getElementById('queueStatus');
+      if (queueData.status === 'boarding') {
+        statusEl.textContent = '🎉 Ready to Board!';
+        statusEl.style.background = 'rgba(39, 174, 96, 0.1)';
+        statusEl.style.color = 'var(--success)';
+        showQRCode();
+      } else if (queueData.status === 'next') {
+        statusEl.textContent = '⚡ You\'re Next!';
+        statusEl.style.background = 'rgba(243, 156, 18, 0.1)';
+        statusEl.style.color = 'var(--warning)';
+      }
+    }
+    
+    function loadQueueProgress() {
+      const progressContainer = document.getElementById('queueProgress');
+      
+      const steps = [
+        { icon: '✓', label: 'Queue Joined', status: 'completed' },
+        { icon: '⏳', label: 'Waiting in Queue', status: queueData.position <= 2 ? 'completed' : 'active' },
+        { icon: '🚌', label: 'Bus Arriving', status: queueData.position === 1 ? 'active' : '' },
+        { icon: '🎫', label: 'Ready to Board', status: queueData.status === 'boarding' ? 'active' : '' }
+      ];
+      
+      progressContainer.innerHTML = steps.map(step => `
+        <div class="progress-step ${step.status}">
+          <div class="step-icon">${step.icon}</div>
+          <div style="flex: 1;">
+            <div class="font-semibold">${step.label}</div>
+            <div class="text-sm text-gray">
+              ${step.status === 'completed' ? 'Completed' : 
+                step.status === 'active' ? 'In Progress' : 'Pending'}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function showQRCode() {
+      const qrCode = document.getElementById('qrCode');
+      const qrData = `TRANSIAI-${queueData.number}-${Date.now()}`;
+      qrCode.innerHTML = `<img src="${generateQRCode(qrData)}" alt="QR Code" style="width: 100%; height: 100%; object-fit: contain;">`;
+    }
+    
+    function startQueueSimulation() {
+      // Simulate queue progression
+      let updateCount = 0;
+      const interval = setInterval(() => {
+        updateCount++;
+        
+        if (queueData.waitTime > 0) {
+          queueData.waitTime--;
+          queueData.nextBus = Math.max(1, queueData.nextBus - 1);
+          
+          if (updateCount % 2 === 0 && queueData.peopleAhead > 0) {
+            queueData.peopleAhead--;
+            queueData.position--;
+          }
+          
+          updateQueueDisplay();
+          
+          // Check for status changes
+          if (queueData.peopleAhead <= 3 && queueData.status === 'waiting') {
+            queueData.status = 'next';
+            showNotification('You\'re next in line! Get ready to board.', 'warning');
+            updateQueueDisplay();
+            loadQueueProgress();
+          }
+          
+          if (queueData.waitTime === 0) {
+            queueData.status = 'boarding';
+            showNotification('🎉 It\'s your turn! Please proceed to board.', 'success');
+            updateQueueDisplay();
+            loadQueueProgress();
+            clearInterval(interval);
+          }
+        }
+      }, 3000); // Update every 3 seconds for demo
+    }
+    
+    function refreshQueue() {
+      showNotification('Refreshing queue status...', 'info');
+      setTimeout(() => {
+        updateQueueDisplay();
+        showNotification('Queue status updated!', 'success');
+      }, 1000);
+    }
+    
+    function generateTicket() {
+      if (queueData.status !== 'boarding') {
+        showNotification('Ticket will be available when it\'s your turn to board', 'warning');
+        return;
+      }
+      
+      window.location.href = `ticket.html?queue=${queueData.number}`;
+    }
+    
+    function cancelQueue() {
+      showModal(
+        'Cancel Queue',
+        '<p>Are you sure you want to leave the queue? You will lose your position.</p>',
+        [
+          {
+            label: 'No, Stay in Queue',
+            class: 'btn-ghost',
+            onclick: 'closeModal()'
+          },
+          {
+            label: 'Yes, Cancel',
+            class: 'btn-primary',
+            onclick: 'confirmCancel()'
+          }
+        ]
+      );
+    }
+    
+    function confirmCancel() {
+      closeModal();
+      showNotification('Queue cancelled. Redirecting...', 'info');
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 1500);
+    }
+    
+    function contactSupport() {
+      showModal(
+        'Contact Support',
+        `
+          <p class="mb-md">Need assistance with your queue?</p>
+          <div class="form-group">
+            <label class="form-label">Issue Type</label>
+            <select class="form-select">
+              <option>Queue not moving</option>
+              <option>Wrong route</option>
+              <option>Technical issue</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Message</label>
+            <textarea class="form-textarea" placeholder="Describe your issue..."></textarea>
+          </div>
+        `,
+        [
+          {
+            label: 'Cancel',
+            class: 'btn-ghost',
+            onclick: 'closeModal()'
+          },
+          {
+            label: 'Send',
+            class: 'btn-primary',
+            onclick: 'sendSupport()'
+          }
+        ]
+      );
+    }
+    
+    function sendSupport() {
+      closeModal();
+      showNotification('Support request sent! We\'ll contact you shortly.', 'success');
+    }
+    
+    // Initialize
+    initializeQueue();
+  </script>
+</body>
+</html>

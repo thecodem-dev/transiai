@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - TransiAI Passenger</title>
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body {
+      background: var(--off-white);
+    }
+    
+    .dashboard-container {
+      padding-top: 80px;
+      min-height: 100vh;
+    }
+    
+    .dashboard-header {
+      background: var(--gradient-primary);
+      color: var(--white);
+      padding: var(--space-2xl) 0;
+      margin-bottom: var(--space-xl);
+    }
+    
+    .welcome-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-lg);
+    }
+    
+    .wallet-card {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--space-lg);
+      margin-bottom: var(--space-2xl);
+    }
+    
+    .action-card {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      text-decoration: none;
+      color: var(--deep-brown);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    
+    .action-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .action-icon {
+      width: 60px;
+      height: 60px;
+      background: var(--gradient-primary);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-3xl);
+      margin-bottom: var(--space-md);
+    }
+    
+    .recent-section {
+      margin-bottom: var(--space-2xl);
+    }
+    
+    .trip-card {
+      background: var(--white);
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: var(--space-md);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-md);
+      transition: all var(--transition-base);
+    }
+    
+    .trip-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateX(4px);
+    }
+    
+    .trip-info {
+      flex: 1;
+    }
+    
+    .trip-route {
+      font-weight: var(--weight-semibold);
+      color: var(--deep-brown);
+      margin-bottom: var(--space-xs);
+    }
+    
+    .trip-details {
+      font-size: var(--text-sm);
+      color: var(--medium-gray);
+    }
+    
+    @media (max-width: 768px) {
+      .welcome-section {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .trip-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-brand">
+        <div class="navbar-logo">T</div>
+        <span>TransiAI</span>
+      </a>
+      
+      <button class="navbar-toggle" onclick="toggleMobileMenu()">☰</button>
+      
+      <ul class="navbar-menu">
+        <li><a href="index.html" class="navbar-link active">Dashboard</a></li>
+        <li><a href="map.html" class="navbar-link">Live Map</a></li>
+        <li><a href="queue.html" class="navbar-link">My Queue</a></li>
+        <li><a href="history.html" class="navbar-link">History</a></li>
+        <li><a href="profile.html" class="navbar-link">Profile</a></li>
+        <li><a href="#" onclick="logout()" class="navbar-link">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="dashboard-container">
+    <!-- Header Section -->
+    <div class="dashboard-header">
+      <div class="container">
+        <div class="welcome-section">
+          <div>
+            <h1 class="text-4xl font-bold mb-sm" id="welcomeText">Welcome back!</h1>
+            <p class="text-lg" style="opacity: 0.9;">Ready for your next journey?</p>
+          </div>
+          <div class="wallet-card">
+            <div class="text-sm mb-xs" style="opacity: 0.9;">Wallet Balance</div>
+            <div class="text-3xl font-bold" id="walletBalance">R 0.00</div>
+            <button class="btn btn-sm mt-md" style="background: white; color: var(--clay-orange);" onclick="showTopUpModal()">
+              Top Up
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Quick Actions -->
+      <section class="quick-actions">
+        <a href="map.html" class="action-card stagger-item">
+          <div class="action-icon">🗺️</div>
+          <h3 class="text-lg font-bold mb-xs">Find Routes</h3>
+          <p class="text-sm text-gray">Search and track buses in real-time</p>
+        </a>
+        
+        <a href="queue.html" class="action-card stagger-item">
+          <div class="action-icon">🎫</div>
+          <h3 class="text-lg font-bold mb-xs">Get Queue Number</h3>
+          <p class="text-sm text-gray">Join digital queue for your route</p>
+        </a>
+        
+        <a href="ticket.html" class="action-card stagger-item">
+          <div class="action-icon">📱</div>
+          <h3 class="text-lg font-bold mb-xs">My Tickets</h3>
+          <p class="text-sm text-gray">View active and past tickets</p>
+        </a>
+        
+        <a href="#" onclick="showEmergencyModal()" class="action-card stagger-item">
+          <div class="action-icon" style="background: var(--gradient-tech);">🆘</div>
+          <h3 class="text-lg font-bold mb-xs">Emergency</h3>
+          <p class="text-sm text-gray">Get immediate assistance</p>
+        </a>
+      </section>
+
+      <!-- Recent Trips -->
+      <section class="recent-section">
+        <div class="flex justify-between items-center mb-lg">
+          <h2 class="text-2xl font-bold">Recent Trips</h2>
+          <a href="history.html" class="text-primary font-semibold">View All →</a>
+        </div>
+        
+        <div id="recentTrips">
+          <!-- Trips will be loaded here -->
+        </div>
+      </section>
+
+      <!-- Popular Routes -->
+      <section class="recent-section">
+        <h2 class="text-2xl font-bold mb-lg">Popular Routes</h2>
+        <div class="grid md:grid-cols-2 gap-lg" id="popularRoutes">
+          <!-- Routes will be loaded here -->
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    // Check authentication
+    requireAuth(['passenger']);
+    
+    // Load user data
+    const user = getCurrentUser();
+    if (user) {
+      document.getElementById('welcomeText').textContent = `Welcome back, ${user.name.split(' ')[0]}!`;
+      document.getElementById('walletBalance').textContent = formatCurrency(user.wallet || 0);
+    }
+    
+    // Load recent trips
+    function loadRecentTrips() {
+      const tripsContainer = document.getElementById('recentTrips');
+      const userTrips = TransiAI.trips.filter(trip => trip.userId === user.id).slice(0, 3);
+      
+      if (userTrips.length === 0) {
+        tripsContainer.innerHTML = `
+          <div class="card text-center p-xl">
+            <p class="text-gray">No recent trips yet. Start your journey today!</p>
+            <a href="map.html" class="btn btn-primary mt-md">Find a Route</a>
+          </div>
+        `;
+        return;
+      }
+      
+      tripsContainer.innerHTML = userTrips.map(trip => `
+        <div class="trip-card">
+          <div class="trip-info">
+            <div class="trip-route">${trip.route}</div>
+            <div class="trip-details">
+              ${formatDate(trip.date)} • ${trip.time} • Queue: ${trip.queueNumber}
+            </div>
+          </div>
+          <div>
+            <div class="badge badge-success">${trip.status}</div>
+            <div class="text-lg font-bold text-primary mt-xs">${formatCurrency(trip.price)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // Load popular routes
+    function loadPopularRoutes() {
+      const routesContainer = document.getElementById('popularRoutes');
+      const routes = TransiAI.routes.slice(0, 4);
+      
+      routesContainer.innerHTML = routes.map(route => `
+        <div class="card hover-lift">
+          <div class="flex justify-between items-start mb-md">
+            <div>
+              <h3 class="font-bold text-lg mb-xs">${route.name}</h3>
+              <p class="text-sm text-gray">${route.distance} • ${route.duration}</p>
+            </div>
+            <span class="badge badge-primary">${route.type}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <div class="text-2xl font-bold text-primary">${formatCurrency(route.price)}</div>
+            <a href="map.html?route=${route.id}" class="btn btn-sm btn-primary">Book Now</a>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // Top up modal
+    function showTopUpModal() {
+      showModal(
+        'Top Up Wallet',
+        `
+          <div class="form-group">
+            <label class="form-label">Amount (R)</label>
+            <input type="number" id="topUpAmount" class="form-input" placeholder="Enter amount" min="10" step="10" value="100">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payment Method</label>
+            <select class="form-select">
+              <option>Credit/Debit Card</option>
+              <option>Mobile Money</option>
+              <option>Bank Transfer</option>
+            </select>
+          </div>
+        `,
+        [
+          {
+            label: 'Cancel',
+            class: 'btn-ghost',
+            onclick: 'closeModal()'
+          },
+          {
+            label: 'Top Up',
+            class: 'btn-primary',
+            onclick: 'processTopUp()'
+          }
+        ]
+      );
+    }
+    
+    function processTopUp() {
+      const amount = parseFloat(document.getElementById('topUpAmount').value);
+      if (amount && amount >= 10) {
+        user.wallet = (user.wallet || 0) + amount;
+        localStorage.setItem('transiai_user', JSON.stringify(user));
+        document.getElementById('walletBalance').textContent = formatCurrency(user.wallet);
+        closeModal();
+        showNotification(`Successfully added ${formatCurrency(amount)} to your wallet!`, 'success');
+      } else {
+        showNotification('Please enter a valid amount (minimum R10)', 'error');
+      }
+    }
+    
+    // Emergency modal
+    function showEmergencyModal() {
+      showModal(
+        '🆘 Emergency Assistance',
+        `
+          <div class="alert alert-error mb-lg">
+            <strong>Emergency services will be contacted immediately</strong>
+          </div>
+          <div class="form-group">
+            <label class="form-label">What's the emergency?</label>
+            <select class="form-select" id="emergencyType">
+              <option>Medical Emergency</option>
+              <option>Safety Concern</option>
+              <option>Vehicle Breakdown</option>
+              <option>Accident</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Additional Details (Optional)</label>
+            <textarea class="form-textarea" id="emergencyDetails" placeholder="Describe the situation..."></textarea>
+          </div>
+        `,
+        [
+          {
+            label: 'Cancel',
+            class: 'btn-ghost',
+            onclick: 'closeModal()'
+          },
+          {
+            label: 'Call Emergency Services',
+            class: 'btn-primary',
+            onclick: 'callEmergency()'
+          }
+        ]
+      );
+    }
+    
+    function callEmergency() {
+      closeModal();
+      showNotification('Emergency services have been notified. Help is on the way!', 'success');
+      // In a real app, this would contact emergency services
+    }
+    
+    // Initialize
+    loadRecentTrips();
+    loadPopularRoutes();
+  </script>
+</body>
+</html>

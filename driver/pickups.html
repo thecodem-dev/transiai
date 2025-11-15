@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Passenger Pickups - TransiAI Driver</title>
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body {
+      background: var(--off-white);
+    }
+    
+    .pickups-container {
+      padding-top: 80px;
+      min-height: 100vh;
+      padding-bottom: var(--space-2xl);
+    }
+    
+    .pickups-header {
+      background: var(--gradient-tech);
+      color: var(--white);
+      padding: var(--space-2xl) 0;
+      margin-bottom: var(--space-xl);
+    }
+    
+    .capacity-card {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      padding: var(--space-xl);
+      border-radius: var(--radius-lg);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      text-align: center;
+    }
+    
+    .capacity-circle {
+      width: 150px;
+      height: 150px;
+      margin: 0 auto var(--space-lg);
+      border-radius: 50%;
+      border: 8px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    
+    .capacity-value {
+      font-size: var(--text-4xl);
+      font-weight: var(--weight-bold);
+    }
+    
+    .capacity-label {
+      font-size: var(--text-sm);
+      opacity: 0.9;
+    }
+    
+    .filters-section {
+      background: var(--white);
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .pickup-card {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      margin-bottom: var(--space-lg);
+      transition: all var(--transition-base);
+      border-left: 4px solid var(--cool-teal);
+    }
+    
+    .pickup-card:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateX(4px);
+    }
+    
+    .pickup-card.completed {
+      opacity: 0.6;
+      border-left-color: var(--success);
+    }
+    
+    .pickup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: var(--space-md);
+      flex-wrap: wrap;
+      gap: var(--space-md);
+    }
+    
+    .passenger-details {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+    
+    .passenger-avatar {
+      width: 60px;
+      height: 60px;
+      background: var(--gradient-tech);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-xl);
+      color: var(--white);
+      font-weight: var(--weight-bold);
+    }
+    
+    .pickup-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-md);
+      margin-bottom: var(--space-md);
+      padding: var(--space-md);
+      background: var(--off-white);
+      border-radius: var(--radius-md);
+    }
+    
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    
+    .pickup-actions {
+      display: flex;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+    }
+    
+    .qr-scanner {
+      background: var(--white);
+      padding: var(--space-2xl);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      text-align: center;
+      margin-bottom: var(--space-xl);
+    }
+    
+    .scanner-frame {
+      width: 250px;
+      height: 250px;
+      margin: var(--space-xl) auto;
+      border: 4px dashed var(--cool-teal);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .scanner-line {
+      position: absolute;
+      width: 100%;
+      height: 2px;
+      background: var(--cool-teal);
+      animation: scan 2s linear infinite;
+    }
+    
+    @keyframes scan {
+      0%, 100% { top: 0; }
+      50% { top: 100%; }
+    }
+    
+    @media (max-width: 768px) {
+      .pickup-header {
+        flex-direction: column;
+      }
+      
+      .pickup-actions {
+        width: 100%;
+      }
+      
+      .pickup-actions button {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-brand">
+        <div class="navbar-logo">T</div>
+        <span>TransiAI Driver</span>
+      </a>
+      
+      <button class="navbar-toggle" onclick="toggleMobileMenu()">☰</button>
+      
+      <ul class="navbar-menu">
+        <li><a href="index.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="routes.html" class="navbar-link">My Routes</a></li>
+        <li><a href="pickups.html" class="navbar-link active">Pickups</a></li>
+        <li><a href="earnings.html" class="navbar-link">Earnings</a></li>
+        <li><a href="incidents.html" class="navbar-link">Incidents</a></li>
+        <li><a href="#" onclick="logout()" class="navbar-link">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="pickups-container">
+    <!-- Header -->
+    <div class="pickups-header">
+      <div class="container">
+        <div class="flex justify-between items-center flex-wrap gap-lg">
+          <div>
+            <h1 class="text-4xl font-bold mb-sm">Passenger Pickups</h1>
+            <p class="text-lg" style="opacity: 0.9;">Manage your passenger queue</p>
+          </div>
+          <div class="capacity-card">
+            <div class="capacity-circle">
+              <div class="capacity-value" id="capacityValue">28/35</div>
+              <div class="capacity-label">Capacity</div>
+            </div>
+            <div class="text-sm" style="opacity: 0.9;">7 seats available</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- QR Scanner Section -->
+      <div class="qr-scanner">
+        <h2 class="text-2xl font-bold mb-md">Scan Passenger Ticket</h2>
+        <p class="text-gray mb-lg">Position the QR code within the frame to verify boarding</p>
+        
+        <div class="scanner-frame">
+          <div class="scanner-line"></div>
+          <div style="font-size: 3rem; opacity: 0.3;">📱</div>
+        </div>
+        
+        <button class="btn btn-primary btn-lg" onclick="simulateScan()">
+          📷 Simulate QR Scan
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters-section">
+        <div class="flex gap-md items-center flex-wrap">
+          <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
+            <select class="form-select" id="filterStatus" onchange="filterPickups()">
+              <option value="all">All Passengers</option>
+              <option value="waiting">Waiting</option>
+              <option value="boarding">Boarding</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+          
+          <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
+            <input 
+              type="text" 
+              class="form-input" 
+              placeholder="Search by name or queue..."
+              id="searchInput"
+              oninput="filterPickups()"
+            >
+          </div>
+          
+          <button class="btn btn-outline" onclick="refreshList()">
+            🔄 Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Pickup List -->
+      <div id="pickupsList">
+        <!-- Pickups will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    // Check authentication
+    requireAuth(['driver']);
+    
+    let pickups = [
+      {
+        id: 1,
+        queue: 'A-045',
+        name: 'Thabo Mbeki',
+        phone: '+27 82 123 4567',
+        pickup: 'Park Station',
+        destination: 'Soweto',
+        time: '08:30',
+        status: 'waiting',
+        ticketId: 'TKT-2025-001'
+      },
+      {
+        id: 2,
+        queue: 'A-046',
+        name: 'Sipho Khumalo',
+        phone: '+27 83 234 5678',
+        pickup: 'Park Station',
+        destination: 'Soweto',
+        time: '08:32',
+        status: 'waiting',
+        ticketId: 'TKT-2025-002'
+      },
+      {
+        id: 3,
+        queue: 'A-047',
+        name: 'Zanele Ndlovu',
+        phone: '+27 84 345 6789',
+        pickup: 'Braamfontein',
+        destination: 'Soweto',
+        time: '08:35',
+        status: 'boarding',
+        ticketId: 'TKT-2025-003'
+      },
+      {
+        id: 4,
+        queue: 'A-048',
+        name: 'Nomsa Dlamini',
+        phone: '+27 85 456 7890',
+        pickup: 'Braamfontein',
+        destination: 'Soweto',
+        time: '08:37',
+        status: 'waiting',
+        ticketId: 'TKT-2025-004'
+      }
+    ];
+    
+    let filteredPickups = [...pickups];
+    let currentCapacity = 28;
+    const maxCapacity = 35;
+    
+    // Initialize
+    function initializePickups() {
+      updateCapacity();
+      loadPickups();
+    }
+    
+    function updateCapacity() {
+      const completedCount = pickups.filter(p => p.status === 'completed').length;
+      currentCapacity = 28 + completedCount;
+      const available = maxCapacity - currentCapacity;
+      
+      document.getElementById('capacityValue').textContent = `${currentCapacity}/${maxCapacity}`;
+      
+      // Update capacity circle color
+      const circle = document.querySelector('.capacity-circle');
+      const percentage = (currentCapacity / maxCapacity) * 100;
+      
+      if (percentage >= 90) {
+        circle.style.borderColor = 'var(--error)';
+      } else if (percentage >= 70) {
+        circle.style.borderColor = 'var(--warning)';
+      } else {
+        circle.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+      }
+    }
+    
+    function loadPickups() {
+      const pickupsList = document.getElementById('pickupsList');
+      
+      if (filteredPickups.length === 0) {
+        pickupsList.innerHTML = `
+          <div class="card text-center p-2xl">
+            <div style="font-size: 3rem; margin-bottom: var(--space-lg);">✅</div>
+            <h3 class="text-2xl font-bold mb-md">All passengers picked up!</h3>
+            <p class="text-gray">Great job! No pending pickups at the moment.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      pickupsList.innerHTML = filteredPickups.map(pickup => `
+        <div class="pickup-card ${pickup.status === 'completed' ? 'completed' : ''}" id="pickup-${pickup.id}">
+          <div class="pickup-header">
+            <div class="passenger-details">
+              <div class="passenger-avatar">${pickup.name.split(' ').map(n => n[0]).join('')}</div>
+              <div>
+                <h3 class="text-xl font-bold">${pickup.name}</h3>
+                <div class="text-sm text-gray">Queue: ${pickup.queue}</div>
+              </div>
+            </div>
+            <div>
+              <span class="badge badge-${getStatusBadge(pickup.status)}">${pickup.status}</span>
+            </div>
+          </div>
+          
+          <div class="pickup-info">
+            <div class="info-item">
+              <span>📍</span>
+              <div>
+                <div class="text-xs text-gray">Pickup</div>
+                <div class="font-semibold">${pickup.pickup}</div>
+              </div>
+            </div>
+            <div class="info-item">
+              <span>🎯</span>
+              <div>
+                <div class="text-xs text-gray">Destination</div>
+                <div class="font-semibold">${pickup.destination}</div>
+              </div>
+            </div>
+            <div class="info-item">
+              <span>🕐</span>
+              <div>
+                <div class="text-xs text-gray">Time</div>
+                <div class="font-semibold">${pickup.time}</div>
+              </div>
+            </div>
+            <div class="info-item">
+              <span>📱</span>
+              <div>
+                <div class="text-xs text-gray">Phone</div>
+                <div class="font-semibold">${pickup.phone}</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="pickup-actions">
+            ${pickup.status !== 'completed' ? `
+              <button class="btn btn-sm btn-outline" onclick="callPassenger(${pickup.id})">
+                📞 Call
+              </button>
+              <button class="btn btn-sm btn-outline" onclick="sendMessage(${pickup.id})">
+                💬 Message
+              </button>
+              <button class="btn btn-sm btn-secondary" onclick="scanTicket(${pickup.id})">
+                📷 Scan Ticket
+              </button>
+              <button class="btn btn-sm btn-primary" onclick="confirmPickup(${pickup.id})">
+                ✓ Confirm Pickup
+              </button>
+            ` : `
+              <button class="btn btn-sm btn-success" disabled>
+                ✓ Picked Up
+              </button>
+            `}
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function getStatusBadge(status) {
+      const badges = {
+        'waiting': 'warning',
+        'boarding': 'info',
+        'completed': 'success'
+      };
+      return badges[status] || 'info';
+    }
+    
+    function filterPickups() {
+      const statusFilter = document.getElementById('filterStatus').value;
+      const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+      
+      filteredPickups = pickups.filter(pickup => {
+        const matchesStatus = statusFilter === 'all' || pickup.status === statusFilter;
+        const matchesSearch = !searchQuery || 
+          pickup.name.toLowerCase().includes(searchQuery) ||
+          pickup.queue.toLowerCase().includes(searchQuery);
+        
+        return matchesStatus && matchesSearch;
+      });
+      
+      loadPickups();
+    }
+    
+    function refreshList() {
+      showNotification('Refreshing pickup list...', 'info');
+      setTimeout(() => {
+        loadPickups();
+        showNotification('List updated!', 'success');
+      }, 1000);
+    }
+    
+    function callPassenger(pickupId) {
+      const pickup = pickups.find(p => p.id === pickupId);
+      showNotification(`Calling ${pickup.name}...`, 'info');
+    }
+    
+    function sendMessage(pickupId) {
+      const pickup = pickups.find(p => p.id === pickupId);
+      showModal(
+        'Send Message',
+        `
+          <div class="mb-md">
+            <strong>To:</strong> ${pickup.name} (${pickup.queue})
+          </div>
+          <div class="form-group">
+            <label class="form-label">Message</label>
+            <textarea class="form-textarea" placeholder="Type your message..." rows="4"></textarea>
+          </div>
+        `,
+        [
+          { label: 'Cancel', class: 'btn-ghost', onclick: 'closeModal()' },
+          { label: 'Send', class: 'btn-primary', onclick: 'confirmSendMessage(' + pickupId + ')' }
+        ]
+      );
+    }
+    
+    function confirmSendMessage(pickupId) {
+      closeModal();
+      showNotification('Message sent successfully!', 'success');
+    }
+    
+    function scanTicket(pickupId) {
+      const pickup = pickups.find(p => p.id === pickupId);
+      showModal(
+        'Scan Ticket',
+        `
+          <div class="text-center">
+            <div style="font-size: 3rem; margin-bottom: var(--space-md);">📷</div>
+            <h3 class="text-xl font-bold mb-md">Scanning ${pickup.name}'s Ticket</h3>
+            <div class="scanner-frame" style="width: 200px; height: 200px; margin: var(--space-xl) auto;">
+              <div class="scanner-line"></div>
+              <div style="font-size: 2rem; opacity: 0.3;">🎫</div>
+            </div>
+            <p class="text-gray">Position QR code in frame</p>
+          </div>
+        `,
+        [
+          { label: 'Cancel', class: 'btn-ghost', onclick: 'closeModal()' },
+          { label: 'Verify Manually', class: 'btn-primary', onclick: 'verifyTicket(' + pickupId + ')' }
+        ]
+      );
+      
+      // Simulate scan success
+      setTimeout(() => {
+        closeModal();
+        verifyTicket(pickupId);
+      }, 2000);
+    }
+    
+    function verifyTicket(pickupId) {
+      const pickup = pickups.find(p => p.id === pickupId);
+      showNotification(`✓ Ticket ${pickup.ticketId} verified!`, 'success');
+      
+      // Auto-confirm pickup after verification
+      setTimeout(() => {
+        confirmPickup(pickupId);
+      }, 1000);
+    }
+    
+    function confirmPickup(pickupId) {
+      const pickup = pickups.find(p => p.id === pickupId);
+      
+      if (currentCapacity >= maxCapacity) {
+        showNotification('Vehicle is at full capacity!', 'error');
+        return;
+      }
+      
+      pickup.status = 'completed';
+      
+      const card = document.getElementById(`pickup-${pickupId}`);
+      card.style.animation = 'fadeOut 0.5s ease-out';
+      
+      setTimeout(() => {
+        updateCapacity();
+        loadPickups();
+        showNotification(`${pickup.name} picked up successfully!`, 'success');
+      }, 500);
+    }
+    
+    function simulateScan() {
+      showNotification('Scanning QR code...', 'info');
+      
+      setTimeout(() => {
+        const waitingPickup = pickups.find(p => p.status === 'waiting');
+        if (waitingPickup) {
+          showNotification(`✓ Ticket verified: ${waitingPickup.name}`, 'success');
+          setTimeout(() => {
+            confirmPickup(waitingPickup.id);
+          }, 1000);
+        } else {
+          showNotification('No valid ticket found', 'error');
+        }
+      }, 1500);
+    }
+    
+    // Initialize
+    initializePickups();
+  </script>
+</body>
+</html>

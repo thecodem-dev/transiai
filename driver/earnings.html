@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Earnings - TransiAI Driver</title>
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <style>
+    body {
+      background: var(--off-white);
+    }
+    
+    .earnings-container {
+      padding-top: 80px;
+      min-height: 100vh;
+      padding-bottom: var(--space-2xl);
+    }
+    
+    .earnings-header {
+      background: var(--gradient-primary);
+      color: var(--white);
+      padding: var(--space-2xl) 0;
+      margin-bottom: var(--space-xl);
+    }
+    
+    .earnings-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-xl);
+    }
+    
+    .total-earnings {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      padding: var(--space-xl);
+      border-radius: var(--radius-lg);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      min-width: 250px;
+    }
+    
+    .earnings-amount {
+      font-size: var(--text-5xl);
+      font-weight: var(--weight-bold);
+      margin: var(--space-md) 0;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-lg);
+      margin-bottom: var(--space-2xl);
+    }
+    
+    .stat-card {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      text-align: center;
+    }
+    
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto var(--space-md);
+      background: var(--gradient-tech);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-2xl);
+    }
+    
+    .stat-value {
+      font-size: var(--text-3xl);
+      font-weight: var(--weight-bold);
+      color: var(--deep-brown);
+      margin-bottom: var(--space-xs);
+    }
+    
+    .stat-label {
+      color: var(--medium-gray);
+      font-size: var(--text-sm);
+    }
+    
+    .chart-card {
+      background: var(--white);
+      padding: var(--space-2xl);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .chart-container {
+      height: 300px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      gap: var(--space-md);
+      padding: var(--space-xl) 0;
+      border-bottom: 2px solid var(--light-gray);
+    }
+    
+    .chart-bar {
+      flex: 1;
+      background: var(--gradient-primary);
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+      position: relative;
+      transition: all var(--transition-base);
+      cursor: pointer;
+      min-height: 20px;
+    }
+    
+    .chart-bar:hover {
+      opacity: 0.8;
+      transform: translateY(-4px);
+    }
+    
+    .chart-value {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-weight: var(--weight-bold);
+      font-size: var(--text-sm);
+      color: var(--deep-brown);
+      white-space: nowrap;
+    }
+    
+    .chart-label {
+      text-align: center;
+      margin-top: var(--space-md);
+      font-size: var(--text-sm);
+      color: var(--medium-gray);
+    }
+    
+    .transaction-list {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .transaction-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-lg);
+      border-bottom: 1px solid var(--light-gray);
+      transition: all var(--transition-base);
+    }
+    
+    .transaction-item:hover {
+      background: var(--off-white);
+    }
+    
+    .transaction-item:last-child {
+      border-bottom: none;
+    }
+    
+    .transaction-info {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+    
+    .transaction-icon {
+      width: 50px;
+      height: 50px;
+      background: var(--gradient-tech);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-xl);
+    }
+    
+    .transaction-amount {
+      font-size: var(--text-xl);
+      font-weight: var(--weight-bold);
+      color: var(--success);
+    }
+    
+    @media (max-width: 768px) {
+      .earnings-summary {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .transaction-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-md);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-brand">
+        <div class="navbar-logo">T</div>
+        <span>TransiAI Driver</span>
+      </a>
+      
+      <button class="navbar-toggle" onclick="toggleMobileMenu()">☰</button>
+      
+      <ul class="navbar-menu">
+        <li><a href="index.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="routes.html" class="navbar-link">My Routes</a></li>
+        <li><a href="pickups.html" class="navbar-link">Pickups</a></li>
+        <li><a href="earnings.html" class="navbar-link active">Earnings</a></li>
+        <li><a href="incidents.html" class="navbar-link">Incidents</a></li>
+        <li><a href="#" onclick="logout()" class="navbar-link">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="earnings-container">
+    <!-- Header -->
+    <div class="earnings-header">
+      <div class="container">
+        <div class="earnings-summary">
+          <div>
+            <h1 class="text-4xl font-bold mb-sm">Earnings Dashboard</h1>
+            <p class="text-lg" style="opacity: 0.9;">Track your income and performance</p>
+          </div>
+          <div class="total-earnings">
+            <div class="text-sm" style="opacity: 0.9;">Total Earnings (This Month)</div>
+            <div class="earnings-amount" id="totalEarnings">R 0.00</div>
+            <button class="btn btn-sm mt-md" style="background: white; color: var(--clay-orange);" onclick="requestPayout()">
+              💰 Request Payout
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Statistics -->
+      <div class="stats-grid">
+        <div class="stat-card stagger-item">
+          <div class="stat-icon">📅</div>
+          <div class="stat-value" id="earningsToday">R 0</div>
+          <div class="stat-label">Today's Earnings</div>
+        </div>
+        
+        <div class="stat-card stagger-item">
+          <div class="stat-icon">📊</div>
+          <div class="stat-value" id="avgPerTrip">R 0</div>
+          <div class="stat-label">Avg per Trip</div>
+        </div>
+        
+        <div class="stat-card stagger-item">
+          <div class="stat-icon">🚌</div>
+          <div class="stat-value" id="totalTrips">0</div>
+          <div class="stat-label">Total Trips</div>
+        </div>
+        
+        <div class="stat-card stagger-item">
+          <div class="stat-icon">⏱️</div>
+          <div class="stat-value" id="hoursWorked">0h</div>
+          <div class="stat-label">Hours Worked</div>
+        </div>
+      </div>
+
+      <!-- Earnings Chart -->
+      <div class="chart-card">
+        <div class="flex justify-between items-center mb-xl">
+          <h2 class="text-2xl font-bold">Weekly Earnings</h2>
+          <select class="form-select" style="width: 200px;" onchange="updateChart(this.value)">
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="year">This Year</option>
+          </select>
+        </div>
+        
+        <div class="chart-container" id="earningsChart">
+          <!-- Chart bars will be generated here -->
+        </div>
+      </div>
+
+      <!-- Breakdown -->
+      <div class="grid md:grid-cols-2 gap-lg mb-xl">
+        <div class="card">
+          <h3 class="text-xl font-bold mb-lg">Earnings Breakdown</h3>
+          <div class="space-y-md">
+            <div class="flex justify-between items-center p-md bg-off-white rounded-lg">
+              <span class="text-gray">Base Fare</span>
+              <span class="font-bold text-lg">R 8,500</span>
+            </div>
+            <div class="flex justify-between items-center p-md bg-off-white rounded-lg">
+              <span class="text-gray">Tips</span>
+              <span class="font-bold text-lg">R 450</span>
+            </div>
+            <div class="flex justify-between items-center p-md bg-off-white rounded-lg">
+              <span class="text-gray">Bonuses</span>
+              <span class="font-bold text-lg">R 300</span>
+            </div>
+            <div class="flex justify-between items-center p-md bg-gradient-primary text-white rounded-lg">
+              <span class="font-bold">Total</span>
+              <span class="font-bold text-2xl">R 9,250</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <h3 class="text-xl font-bold mb-lg">Performance Bonuses</h3>
+          <div class="space-y-md">
+            <div class="flex items-center gap-md p-md bg-off-white rounded-lg">
+              <span style="font-size: 2rem;">⭐</span>
+              <div style="flex: 1;">
+                <div class="font-semibold">High Rating Bonus</div>
+                <div class="text-sm text-gray">4.8+ rating maintained</div>
+              </div>
+              <span class="font-bold text-success">+R 150</span>
+            </div>
+            <div class="flex items-center gap-md p-md bg-off-white rounded-lg">
+              <span style="font-size: 2rem;">🎯</span>
+              <div style="flex: 1;">
+                <div class="font-semibold">Trip Milestone</div>
+                <div class="text-sm text-gray">100+ trips completed</div>
+              </div>
+              <span class="font-bold text-success">+R 100</span>
+            </div>
+            <div class="flex items-center gap-md p-md bg-off-white rounded-lg">
+              <span style="font-size: 2rem;">⚡</span>
+              <div style="flex: 1;">
+                <div class="font-semibold">Peak Hours</div>
+                <div class="text-sm text-gray">Rush hour availability</div>
+              </div>
+              <span class="font-bold text-success">+R 50</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="transaction-list">
+        <div class="flex justify-between items-center mb-xl">
+          <h2 class="text-2xl font-bold">Recent Transactions</h2>
+          <button class="btn btn-outline" onclick="exportTransactions()">
+            📥 Export
+          </button>
+        </div>
+        
+        <div id="transactionsList">
+          <!-- Transactions will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    // Check authentication
+    requireAuth(['driver']);
+    
+    const user = getCurrentUser();
+    
+    // Mock earnings data
+    const earningsData = {
+      today: 1250.00,
+      thisMonth: 9250.00,
+      avgPerTrip: 104.17,
+      totalTrips: 89,
+      hoursWorked: 156,
+      weekly: [1200, 1350, 1100, 1450, 1300, 1250, 1600],
+      transactions: [
+        { id: 1, type: 'trip', route: 'JHB CBD to Soweto', amount: 125.00, date: '2025-01-15', time: '14:30' },
+        { id: 2, type: 'trip', route: 'Sandton to Midrand', amount: 150.00, date: '2025-01-15', time: '12:15' },
+        { id: 3, type: 'bonus', route: 'High Rating Bonus', amount: 150.00, date: '2025-01-15', time: '10:00' },
+        { id: 4, type: 'trip', route: 'Rosebank to Alexandra', amount: 95.00, date: '2025-01-14', time: '18:45' },
+        { id: 5, type: 'tip', route: 'Passenger Tip', amount: 50.00, date: '2025-01-14', time: '16:20' },
+        { id: 6, type: 'trip', route: 'JHB CBD to Soweto', amount: 125.00, date: '2025-01-14', time: '14:10' },
+        { id: 7, type: 'trip', route: 'Sandton to Pretoria', amount: 180.00, date: '2025-01-14', time: '11:30' }
+      ]
+    };
+    
+    // Initialize
+    function initializeEarnings() {
+      loadStats();
+      loadChart('week');
+      loadTransactions();
+    }
+    
+    function loadStats() {
+      document.getElementById('totalEarnings').textContent = formatCurrency(earningsData.thisMonth);
+      document.getElementById('earningsToday').textContent = formatCurrency(earningsData.today);
+      document.getElementById('avgPerTrip').textContent = formatCurrency(earningsData.avgPerTrip);
+      document.getElementById('totalTrips').textContent = earningsData.totalTrips;
+      document.getElementById('hoursWorked').textContent = earningsData.hoursWorked + 'h';
+    }
+    
+    function loadChart(period) {
+      const chartContainer = document.getElementById('earningsChart');
+      const data = earningsData.weekly;
+      const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const maxValue = Math.max(...data);
+      
+      chartContainer.innerHTML = data.map((value, index) => {
+        const height = (value / maxValue) * 100;
+        return `
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+            <div class="chart-bar" style="height: ${height}%;">
+              <div class="chart-value">${formatCurrency(value)}</div>
+            </div>
+            <div class="chart-label">${labels[index]}</div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function updateChart(period) {
+      showNotification(`Loading ${period} data...`, 'info');
+      setTimeout(() => {
+        loadChart(period);
+        showNotification('Chart updated!', 'success');
+      }, 500);
+    }
+    
+    function loadTransactions() {
+      const transactionsList = document.getElementById('transactionsList');
+      
+      transactionsList.innerHTML = earningsData.transactions.map(transaction => `
+        <div class="transaction-item">
+          <div class="transaction-info">
+            <div class="transaction-icon">${getTransactionIcon(transaction.type)}</div>
+            <div>
+              <div class="font-semibold">${transaction.route}</div>
+              <div class="text-sm text-gray">${formatDate(transaction.date)} • ${transaction.time}</div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div class="transaction-amount">+${formatCurrency(transaction.amount)}</div>
+            <div class="text-xs text-gray">${transaction.type}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function getTransactionIcon(type) {
+      const icons = {
+        'trip': '🚌',
+        'bonus': '🎁',
+        'tip': '💝'
+      };
+      return icons[type] || '💰';
+    }
+    
+    function requestPayout() {
+      showModal(
+        'Request Payout',
+        `
+          <div class="text-center mb-lg">
+            <div style="font-size: 3rem; margin-bottom: var(--space-md);">💰</div>
+            <h3 class="text-2xl font-bold mb-md">Available Balance</h3>
+            <div class="text-4xl font-bold text-primary mb-lg">${formatCurrency(earningsData.thisMonth)}</div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Payout Amount</label>
+            <input type="number" class="form-input" id="payoutAmount" value="${earningsData.thisMonth}" step="0.01">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Payout Method</label>
+            <select class="form-select">
+              <option>Bank Transfer (2-3 days)</option>
+              <option>Instant Transfer (Fee: R 15)</option>
+              <option>Mobile Money</option>
+            </select>
+          </div>
+          
+          <div class="alert alert-info">
+            <strong>Note:</strong> Payouts are processed within 2-3 business days.
+          </div>
+        `,
+        [
+          { label: 'Cancel', class: 'btn-ghost', onclick: 'closeModal()' },
+          { label: 'Request Payout', class: 'btn-primary', onclick: 'confirmPayout()' }
+        ]
+      );
+    }
+    
+    function confirmPayout() {
+      const amount = document.getElementById('payoutAmount').value;
+      closeModal();
+      showNotification(`Payout request of ${formatCurrency(parseFloat(amount))} submitted!`, 'success');
+    }
+    
+    function exportTransactions() {
+      showNotification('Exporting transactions...', 'info');
+      setTimeout(() => {
+        showNotification('Transactions exported successfully!', 'success');
+      }, 1000);
+    }
+    
+    // Initialize
+    initializeEarnings();
+  </script>
+</body>
+</html>
