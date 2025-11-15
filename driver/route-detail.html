@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Route Details - TransiAI Driver</title>
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body {
+      background: var(--off-white);
+    }
+    
+    .route-detail-container {
+      padding-top: 80px;
+      min-height: 100vh;
+      padding-bottom: var(--space-2xl);
+    }
+    
+    .route-header {
+      background: var(--gradient-tech);
+      color: var(--white);
+      padding: var(--space-2xl) 0;
+      margin-bottom: var(--space-xl);
+    }
+    
+    .route-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-lg);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .stat-card {
+      background: var(--white);
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: var(--text-4xl);
+      font-weight: var(--weight-bold);
+      color: var(--clay-orange);
+      margin-bottom: var(--space-sm);
+    }
+    
+    .stat-label {
+      color: var(--medium-gray);
+      font-size: var(--text-sm);
+    }
+    
+    .route-map-section {
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: var(--space-lg);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .map-container {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      height: 500px;
+    }
+    
+    .route-legend {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-sm) 0;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .legend-item:last-child {
+      border-bottom: none;
+    }
+    
+    .legend-color {
+      width: 30px;
+      height: 30px;
+      border-radius: var(--radius-md);
+      flex-shrink: 0;
+    }
+    
+    .stops-section {
+      background: var(--white);
+      padding: var(--space-xl);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .stop-card {
+      background: var(--off-white);
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-md);
+      border-left: 6px solid var(--medium-gray);
+      transition: all var(--transition-base);
+      cursor: pointer;
+    }
+    
+    .stop-card:hover {
+      transform: translateX(4px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .stop-card.high-demand {
+      border-left-color: #E74C3C;
+      background: rgba(231, 76, 60, 0.05);
+    }
+    
+    .stop-card.medium-demand {
+      border-left-color: #F39C12;
+      background: rgba(243, 156, 18, 0.05);
+    }
+    
+    .stop-card.low-demand {
+      border-left-color: #27AE60;
+      background: rgba(39, 174, 96, 0.05);
+    }
+    
+    .stop-card.no-demand {
+      border-left-color: var(--medium-gray);
+      background: var(--off-white);
+    }
+    
+    .stop-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: var(--space-md);
+    }
+    
+    .stop-number {
+      width: 40px;
+      height: 40px;
+      background: var(--gradient-primary);
+      color: var(--white);
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: var(--weight-bold);
+      font-size: var(--text-lg);
+    }
+    
+    .passenger-count {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-size: var(--text-2xl);
+      font-weight: var(--weight-bold);
+    }
+    
+    .passenger-details {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-md);
+      margin-top: var(--space-md);
+      padding-top: var(--space-md);
+      border-top: 1px solid var(--light-gray);
+    }
+    
+    .detail-item {
+      text-align: center;
+    }
+    
+    .detail-value {
+      font-size: var(--text-xl);
+      font-weight: var(--weight-bold);
+      color: var(--clay-orange);
+    }
+    
+    .detail-label {
+      font-size: var(--text-xs);
+      color: var(--medium-gray);
+      text-transform: uppercase;
+    }
+    
+    .destination-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+    
+    .destination-tag {
+      padding: var(--space-xs) var(--space-md);
+      background: var(--white);
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs);
+      font-weight: var(--weight-semibold);
+      border: 2px solid var(--light-gray);
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: var(--space-md);
+      margin-top: var(--space-xl);
+    }
+    
+    @media (max-width: 1024px) {
+      .route-map-section {
+        grid-template-columns: 1fr;
+      }
+      
+      .route-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-brand">
+        <div class="navbar-logo">T</div>
+        <span>TransiAI Driver</span>
+      </a>
+      
+      <button class="navbar-toggle" onclick="toggleMobileMenu()">☰</button>
+      
+      <ul class="navbar-menu">
+        <li><a href="index.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="routes.html" class="navbar-link active">My Routes</a></li>
+        <li><a href="pickups.html" class="navbar-link">Pickups</a></li>
+        <li><a href="earnings.html" class="navbar-link">Earnings</a></li>
+        <li><a href="incidents.html" class="navbar-link">Incidents</a></li>
+        <li><a href="#" onclick="logout()" class="navbar-link">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="route-detail-container">
+    <!-- Header -->
+    <div class="route-header">
+      <div class="container">
+        <div class="flex items-center gap-md mb-md">
+          <a href="routes.html" class="btn btn-ghost" style="color: white;">← Back</a>
+          <div>
+            <h1 class="text-4xl font-bold mb-xs" id="routeName">Sandton to Midrand</h1>
+            <p class="text-lg" style="opacity: 0.9;" id="routeDescription">Via Waterfall, Halfway House</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Route Statistics -->
+      <div class="route-stats stagger-item">
+        <div class="stat-card">
+          <div class="stat-value" id="totalPassengers">47</div>
+          <div class="stat-label">Total Passengers Waiting</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="totalStops">8</div>
+          <div class="stat-label">Stops on Route</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="routeDistance">18 km</div>
+          <div class="stat-label">Total Distance</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="estimatedTime">35 min</div>
+          <div class="stat-label">Estimated Time</div>
+        </div>
+      </div>
+
+      <!-- Map and Legend -->
+      <div class="route-map-section">
+        <div class="map-container">
+          <div id="routeMap" style="width: 100%; height: 100%;"></div>
+        </div>
+        
+        <div class="route-legend">
+          <h3 class="text-xl font-bold mb-lg">Passenger Demand Legend</h3>
+          
+          <div class="legend-item">
+            <div class="legend-color" style="background: #E74C3C;"></div>
+            <div>
+              <div class="font-semibold">High Demand</div>
+              <div class="text-sm text-gray">10+ passengers waiting</div>
+            </div>
+          </div>
+          
+          <div class="legend-item">
+            <div class="legend-color" style="background: #F39C12;"></div>
+            <div>
+              <div class="font-semibold">Medium Demand</div>
+              <div class="text-sm text-gray">5-9 passengers waiting</div>
+            </div>
+          </div>
+          
+          <div class="legend-item">
+            <div class="legend-color" style="background: #27AE60;"></div>
+            <div>
+              <div class="font-semibold">Low Demand</div>
+              <div class="text-sm text-gray">1-4 passengers waiting</div>
+            </div>
+          </div>
+          
+          <div class="legend-item">
+            <div class="legend-color" style="background: var(--medium-gray);"></div>
+            <div>
+              <div class="font-semibold">No Passengers</div>
+              <div class="text-sm text-gray">0 passengers waiting</div>
+            </div>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <h4 class="font-bold mb-md">Route Summary</h4>
+          <div class="text-sm text-gray mb-sm">
+            <strong>Start:</strong> Sandton City Mall<br>
+            <strong>End:</strong> Midrand Station<br>
+            <strong>Next Departure:</strong> 14:30 (in 15 min)
+          </div>
+          
+          <button class="btn btn-primary btn-full mt-lg" onclick="startRoute()">
+            🚌 Start Route
+          </button>
+        </div>
+      </div>
+
+      <!-- Stops Details -->
+      <div class="stops-section">
+        <h2 class="text-2xl font-bold mb-lg">Stops & Passenger Details</h2>
+        <p class="text-gray mb-xl">Click on any stop to see more details about waiting passengers</p>
+        
+        <div id="stopsList">
+          <!-- Stops will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button class="btn btn-primary btn-lg" onclick="startRoute()">
+          🚌 Start Route Now
+        </button>
+        <button class="btn btn-secondary btn-lg" onclick="viewNavigation()">
+          🧭 View Navigation
+        </button>
+        <button class="btn btn-outline btn-lg" onclick="contactDispatch()">
+          📞 Contact Dispatch
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="../assets/js/map.js"></script>
+  <script>
+    // Check authentication
+    requireAuth(['driver']);
+    
+    // Mock route data with detailed stop information
+    const routeData = {
+      id: 2,
+      name: 'Sandton to Midrand',
+      description: 'Via Waterfall, Halfway House',
+      distance: '18 km',
+      duration: '35 min',
+      stops: [
+        {
+          id: 1,
+          name: 'Sandton City Mall',
+          location: { lat: -26.1076, lng: 28.0567 },
+          passengers: 12,
+          demand: 'high',
+          destinations: {
+            'Midrand': 8,
+            'Waterfall': 3,
+            'Halfway House': 1
+          },
+          waitingTime: '5 min',
+          queueNumbers: ['A-045', 'A-046', 'A-047']
+        },
+        {
+          id: 2,
+          name: 'Sandton Gautrain Station',
+          location: { lat: -26.1065, lng: 28.0578 },
+          passengers: 8,
+          demand: 'medium',
+          destinations: {
+            'Midrand': 5,
+            'Waterfall': 2,
+            'Halfway House': 1
+          },
+          waitingTime: '3 min',
+          queueNumbers: ['B-023', 'B-024']
+        },
+        {
+          id: 3,
+          name: 'Woodmead',
+          location: { lat: -26.0789, lng: 28.0912 },
+          passengers: 6,
+          demand: 'medium',
+          destinations: {
+            'Midrand': 4,
+            'Halfway House': 2
+          },
+          waitingTime: '4 min',
+          queueNumbers: ['C-012']
+        },
+        {
+          id: 4,
+          name: 'Waterfall Corner',
+          location: { lat: -26.0234, lng: 28.1123 },
+          passengers: 15,
+          demand: 'high',
+          destinations: {
+            'Midrand': 10,
+            'Waterfall (drop-off)': 3,
+            'Halfway House': 2
+          },
+          waitingTime: '8 min',
+          queueNumbers: ['D-034', 'D-035', 'D-036', 'D-037']
+        },
+        {
+          id: 5,
+          name: 'Waterfall Mall',
+          location: { lat: -26.0156, lng: 28.1234 },
+          passengers: 3,
+          demand: 'low',
+          destinations: {
+            'Midrand': 2,
+            'Halfway House': 1
+          },
+          waitingTime: '2 min',
+          queueNumbers: ['E-008']
+        },
+        {
+          id: 6,
+          name: 'Halfway House',
+          location: { lat: -25.9876, lng: 28.1456 },
+          passengers: 2,
+          demand: 'low',
+          destinations: {
+            'Midrand': 2
+          },
+          waitingTime: '1 min',
+          queueNumbers: ['F-005']
+        },
+        {
+          id: 7,
+          name: 'Allandale Road',
+          location: { lat: -25.9654, lng: 28.1567 },
+          passengers: 1,
+          demand: 'low',
+          destinations: {
+            'Midrand': 1
+          },
+          waitingTime: '1 min',
+          queueNumbers: ['G-002']
+        },
+        {
+          id: 8,
+          name: 'Midrand Station',
+          location: { lat: -25.9876, lng: 28.1234 },
+          passengers: 0,
+          demand: 'no-demand',
+          destinations: {},
+          waitingTime: '0 min',
+          queueNumbers: []
+        }
+      ]
+    };
+    
+    let map;
+    
+    // Initialize
+    function initializeRouteDetail() {
+      loadRouteStats();
+      loadStops();
+      initializeMap();
+    }
+    
+    function loadRouteStats() {
+      const totalPassengers = routeData.stops.reduce((sum, stop) => sum + stop.passengers, 0);
+      document.getElementById('totalPassengers').textContent = totalPassengers;
+      document.getElementById('totalStops').textContent = routeData.stops.length;
+      document.getElementById('routeDistance').textContent = routeData.distance;
+      document.getElementById('estimatedTime').textContent = routeData.duration;
+    }
+    
+    function loadStops() {
+      const stopsList = document.getElementById('stopsList');
+      
+      stopsList.innerHTML = routeData.stops.map((stop, index) => {
+        const destinationTags = Object.entries(stop.destinations)
+          .map(([dest, count]) => `
+            <span class="destination-tag">
+              📍 ${dest}: <strong>${count}</strong>
+            </span>
+          `).join('');
+        
+        return `
+          <div class="stop-card ${stop.demand}" onclick="showStopDetail(${stop.id})">
+            <div class="stop-header">
+              <div class="flex items-center gap-md">
+                <div class="stop-number">${index + 1}</div>
+                <div>
+                  <h3 class="font-bold text-lg">${stop.name}</h3>
+                  <p class="text-sm text-gray">⏱️ ${stop.waitingTime} avg wait</p>
+                </div>
+              </div>
+              <div class="passenger-count">
+                <span>👥</span>
+                <span>${stop.passengers}</span>
+              </div>
+            </div>
+            
+            ${stop.passengers > 0 ? `
+              <div class="passenger-details">
+                <div class="detail-item">
+                  <div class="detail-value">${stop.passengers}</div>
+                  <div class="detail-label">Waiting</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-value">${Object.keys(stop.destinations).length}</div>
+                  <div class="detail-label">Destinations</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-value">${stop.queueNumbers.length}</div>
+                  <div class="detail-label">Queue Groups</div>
+                </div>
+              </div>
+              
+              <div class="destination-tags">
+                ${destinationTags}
+              </div>
+            ` : `
+              <div class="text-center text-gray mt-md">
+                <p>✓ No passengers waiting at this stop</p>
+              </div>
+            `}
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function initializeMap() {
+      // Initialize map centered on route
+      map = L.map('routeMap').setView([-26.0476, 28.1023], 11);
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+      
+      // Draw route line
+      const routeCoords = routeData.stops.map(stop => [stop.location.lat, stop.location.lng]);
+      L.polyline(routeCoords, {
+        color: '#1BA39C',
+        weight: 5,
+        opacity: 0.7
+      }).addTo(map);
+      
+      // Add stop markers with color coding
+      routeData.stops.forEach((stop, index) => {
+        const color = getDemandColor(stop.demand);
+        const icon = L.divIcon({
+          className: 'custom-marker',
+          html: `
+            <div style="
+              width: 40px;
+              height: 40px;
+              background: ${color};
+              border: 3px solid white;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-weight: bold;
+              color: white;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+              font-size: 14px;
+            ">
+              ${index + 1}
+            </div>
+          `,
+          iconSize: [40, 40],
+          iconAnchor: [20, 20]
+        });
+        
+        const marker = L.marker([stop.location.lat, stop.location.lng], { icon })
+          .addTo(map)
+          .bindPopup(`
+            <div style="min-width: 200px;">
+              <h4 style="margin-bottom: 8px; font-weight: bold;">${stop.name}</h4>
+              <p style="margin: 4px 0;"><strong>👥 ${stop.passengers}</strong> passengers waiting</p>
+              <p style="margin: 4px 0; font-size: 12px; color: #666;">
+                ${Object.entries(stop.destinations).map(([dest, count]) => 
+                  `${dest}: ${count}`
+                ).join('<br>')}
+              </p>
+            </div>
+          `);
+      });
+      
+      // Fit map to show all stops
+      map.fitBounds(routeCoords);
+    }
+    
+    function getDemandColor(demand) {
+      const colors = {
+        'high': '#E74C3C',
+        'medium': '#F39C12',
+        'low': '#27AE60',
+        'no-demand': '#9B9490'
+      };
+      return colors[demand] || colors['no-demand'];
+    }
+    
+    function showStopDetail(stopId) {
+      const stop = routeData.stops.find(s => s.id === stopId);
+      if (!stop) return;
+      
+      const destinationsList = Object.entries(stop.destinations)
+        .map(([dest, count]) => `
+          <div class="flex justify-between items-center p-md" style="border-bottom: 1px solid var(--light-gray);">
+            <span>📍 ${dest}</span>
+            <span class="badge badge-primary">${count} passengers</span>
+          </div>
+        `).join('');
+      
+      showModal(
+        `Stop ${stop.id}: ${stop.name}`,
+        `
+          <div class="mb-lg">
+            <div class="flex justify-between items-center mb-md">
+              <h3 class="text-2xl font-bold">👥 ${stop.passengers} Passengers</h3>
+              <span class="badge badge-${stop.demand === 'high' ? 'error' : stop.demand === 'medium' ? 'warning' : 'success'}">
+                ${stop.demand.replace('-', ' ').toUpperCase()}
+              </span>
+            </div>
+            <p class="text-gray">Average waiting time: <strong>${stop.waitingTime}</strong></p>
+          </div>
+          
+          ${stop.passengers > 0 ? `
+            <div class="mb-lg">
+              <h4 class="font-bold mb-md">Passenger Destinations:</h4>
+              <div style="border: 1px solid var(--light-gray); border-radius: var(--radius-md); overflow: hidden;">
+                ${destinationsList}
+              </div>
+            </div>
+            
+            <div class="mb-lg">
+              <h4 class="font-bold mb-md">Queue Numbers:</h4>
+              <div class="flex gap-sm flex-wrap">
+                ${stop.queueNumbers.map(num => `
+                  <span class="badge badge-info">${num}</span>
+                `).join('')}
+              </div>
+            </div>
+            
+            <div class="alert alert-info">
+              <strong>💡 Tip:</strong> ${stop.passengers} passengers will board at this stop. 
+              Make sure you have enough space (${35 - 28} seats available).
+            </div>
+          ` : `
+            <div class="alert alert-success">
+              ✓ No passengers waiting at this stop. You can proceed to the next stop.
+            </div>
+          `}
+        `,
+        [
+          { label: 'Close', class: 'btn-primary', onclick: 'closeModal()' }
+        ]
+      );
+    }
+    
+    function startRoute() {
+      showModal(
+        'Start Route',
+        `
+          <div class="text-center mb-lg">
+            <div style="font-size: 4rem; margin-bottom: var(--space-md);">🚌</div>
+            <h3 class="text-2xl font-bold mb-md">Ready to Start?</h3>
+            <p class="text-gray mb-lg">You're about to start the route from Sandton to Midrand.</p>
+          </div>
+          
+          <div class="card card-flat mb-lg">
+            <h4 class="font-bold mb-md">Route Summary:</h4>
+            <ul style="list-style: none; padding: 0;">
+              <li class="mb-sm">📍 <strong>8 stops</strong> on this route</li>
+              <li class="mb-sm">👥 <strong>47 passengers</strong> waiting</li>
+              <li class="mb-sm">⏱️ <strong>35 minutes</strong> estimated time</li>
+              <li class="mb-sm">📏 <strong>18 km</strong> total distance</li>
+            </ul>
+          </div>
+          
+          <div class="alert alert-warning">
+            <strong>⚠️ Note:</strong> Make sure your vehicle is ready and you've completed the pre-trip inspection.
+          </div>
+        `,
+        [
+          { label: 'Cancel', class: 'btn-ghost', onclick: 'closeModal()' },
+          { label: 'Start Route', class: 'btn-primary', onclick: 'confirmStartRoute()' }
+        ]
+      );
+    }
+    
+    function confirmStartRoute() {
+      closeModal();
+      showNotification('Route started! Heading to first stop: Sandton City Mall', 'success');
+      
+      // Simulate route progress
+      setTimeout(() => {
+        showNotification('Approaching Sandton City Mall - 12 passengers waiting', 'info');
+      }, 3000);
+    }
+    
+    function viewNavigation() {
+      window.location.href = 'routes.html';
+    }
+    
+    function contactDispatch() {
+      showModal(
+        'Contact Dispatch',
+        `
+          <div class="text-center mb-lg">
+            <div style="font-size: 3rem; margin-bottom: var(--space-md);">📞</div>
+            <h3 class="text-xl font-bold mb-md">Dispatch Center</h3>
+          </div>
+          
+          <div class="card card-flat mb-lg">
+            <h4 class="font-bold mb-md">Contact Options:</h4>
+            <button class="btn btn-outline btn-full mb-sm" onclick="callDispatch()">
+              📞 Call Dispatch: +27 11 123 4567
+            </button>
+            <button class="btn btn-outline btn-full mb-sm" onclick="messageDispatch()">
+              💬 Send Message
+            </button>
+            <button class="btn btn-outline btn-full" onclick="emergencyCall()">
+              🚨 Emergency Contact
+            </button>
+          </div>
+        `,
+        [
+          { label: 'Close', class: 'btn-primary', onclick: 'closeModal()' }
+        ]
+      );
+    }
+    
+    function callDispatch() {
+      closeModal();
+      showNotification('Calling dispatch...', 'info');
+    }
+    
+    function messageDispatch() {
+      closeModal();
+      showNotification('Opening messaging...', 'info');
+    }
+    
+    function emergencyCall() {
+      closeModal();
+      showNotification('Connecting to emergency services...', 'error');
+    }
+    
+    // Initialize
+    initializeRouteDetail();
+  </script>
+</body>
+</html>

@@ -366,16 +366,8 @@
     }
     
     function selectRoute(routeId) {
-      selectedRoute = routes.find(r => r.id === routeId);
-      
-      // Update UI
-      document.querySelectorAll('.route-item').forEach(item => {
-        item.classList.remove('active');
-      });
-      event.target.closest('.route-item').classList.add('active');
-      
-      // Show route info
-      showRouteInfo();
+      // Redirect to detailed route page
+      window.location.href = `route-detail.html?id=${routeId}`;
     }
     
     function showRouteInfo() {
