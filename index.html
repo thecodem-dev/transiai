@@ -11,7 +11,7 @@
     /* Landing Page Specific Styles */
     .hero {
       min-height: 100vh;
-      background: linear-gradient(135deg, var(--deep-indigo) 0%, var(--clay-orange) 100%);
+      background: linear-gradient(135deg, #24315E 0%, #CC5A1A 50%, #DFAA3A 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -26,9 +26,34 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,138.7C960,139,1056,117,1152,106.7C1248,96,1344,96,1392,96L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+      background: 
+        radial-gradient(circle at 20% 50%, rgba(27, 163, 156, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(223, 170, 58, 0.2) 0%, transparent 50%),
+        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.05)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,138.7C960,139,1056,117,1152,106.7C1248,96,1344,96,1392,96L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
       background-size: cover;
-      opacity: 0.3;
+      animation: gradientShift 15s ease infinite;
+    }
+    
+    @keyframes gradientShift {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.5; }
+    }
+    
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.3)"/></svg>');
+      opacity: 0.4;
+      animation: float 20s linear infinite;
+    }
+    
+    @keyframes float {
+      from { transform: translateY(0); }
+      to { transform: translateY(-100px); }
     }
     
     .hero-content {
@@ -41,18 +66,25 @@
     }
     
     .hero-title {
-      font-size: var(--text-5xl);
+      font-size: clamp(2.5rem, 8vw, 4.5rem);
       font-weight: var(--weight-bold);
       margin-bottom: var(--space-lg);
       color: var(--white);
       animation: fadeInUp 0.8s ease-out;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      line-height: 1.2;
     }
     
     .hero-subtitle {
-      font-size: var(--text-xl);
+      font-size: clamp(1rem, 3vw, 1.5rem);
       margin-bottom: var(--space-2xl);
-      color: rgba(255, 255, 255, 0.9);
+      color: rgba(255, 255, 255, 0.95);
       animation: fadeInUp 0.8s ease-out 0.2s backwards;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
     }
     
     .hero-buttons {
@@ -61,6 +93,48 @@
       justify-content: center;
       flex-wrap: wrap;
       animation: fadeInUp 0.8s ease-out 0.4s backwards;
+    }
+    
+    .hero-buttons .btn {
+      padding: var(--space-lg) var(--space-2xl);
+      font-size: var(--text-lg);
+      font-weight: var(--weight-bold);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+    
+    .hero-buttons .btn:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    }
+    
+    .hero-stats {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: var(--space-2xl);
+      animation: fadeInUp 1s ease-out 0.6s backwards;
+    }
+    
+    .hero-stat {
+      text-align: center;
+      color: var(--white);
+    }
+    
+    .hero-stat-value {
+      font-size: var(--text-3xl);
+      font-weight: var(--weight-bold);
+      display: block;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .hero-stat-label {
+      font-size: var(--text-sm);
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
     
     .features {
@@ -77,21 +151,41 @@
     
     .feature-card {
       background: var(--white);
-      padding: var(--space-xl);
+      padding: var(--space-2xl);
       border-radius: var(--radius-xl);
       box-shadow: var(--shadow-md);
-      transition: all var(--transition-base);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       text-align: center;
+      border: 2px solid transparent;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient-primary);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
     }
     
     .feature-card:hover {
-      transform: translateY(-8px);
-      box-shadow: var(--shadow-xl);
+      transform: translateY(-12px) scale(1.02);
+      box-shadow: 0 20px 60px rgba(204, 90, 26, 0.2);
+      border-color: var(--clay-orange);
+    }
+    
+    .feature-card:hover::before {
+      transform: scaleX(1);
     }
     
     .feature-icon {
-      width: 80px;
-      height: 80px;
+      width: 100px;
+      height: 100px;
       margin: 0 auto var(--space-lg);
       background: var(--gradient-primary);
       border-radius: var(--radius-xl);
@@ -100,6 +194,24 @@
       justify-content: center;
       font-size: var(--text-4xl);
       color: var(--white);
+      box-shadow: 0 10px 30px rgba(204, 90, 26, 0.3);
+      transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover .feature-icon {
+      transform: scale(1.1) rotate(5deg);
+      box-shadow: 0 15px 40px rgba(204, 90, 26, 0.4);
+    }
+    
+    .feature-card h3 {
+      color: var(--deep-brown);
+      margin-bottom: var(--space-md);
+      font-size: var(--text-xl);
+    }
+    
+    .feature-card p {
+      color: var(--dark-gray);
+      line-height: 1.7;
     }
     
     .cta-section {
